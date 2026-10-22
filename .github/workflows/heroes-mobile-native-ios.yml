@@ -1,5 +1,9 @@
 name: Build Heroes III Mobile native iOS
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/heroes-mobile-native-ios.yml'
   workflow_dispatch:
     inputs:
       vcmi_revision:
@@ -20,7 +24,7 @@ jobs:
       - name: Fetch upstream sources and verify modified UI
         run: |
           git clone --filter=blob:none https://github.com/vcmi/vcmi.git vcmi-src
-          git -C vcmi-src checkout --detach '${{ inputs.vcmi_revision }}'
+          git -C vcmi-src checkout --detach '${{ inputs.vcmi_revision || 'bae8bafd2ec3bbf7ec2cacea5c6868ed3b019405' }}'
           cp ios-native/overrides/client/adventureMap/AdventureMapWidget.cpp vcmi-src/client/adventureMap/AdventureMapWidget.cpp
           cp ios-native/overrides/config/widgets/adventureMap.json vcmi-src/config/widgets/adventureMap.json
           python3 ios-native/verify_patch.py vcmi-src
@@ -42,7 +46,7 @@ jobs:
       - name: Clone VCMI and pinned submodules
         run: |
           git clone --recurse-submodules https://github.com/vcmi/vcmi.git vcmi-src
-          git -C vcmi-src checkout --detach '${{ inputs.vcmi_revision }}'
+          git -C vcmi-src checkout --detach '${{ inputs.vcmi_revision || 'bae8bafd2ec3bbf7ec2cacea5c6868ed3b019405' }}'
           git -C vcmi-src submodule update --init --recursive
       - name: Apply native iOS overrides
         run: |
@@ -51,11 +55,18 @@ jobs:
           python3 ios-native/verify_patch.py vcmi-src
           git -C vcmi-src diff --check
           git -C vcmi-src diff > native-ios-customizations.diff
+      - name: Restore official VCMI iOS dependency cache
+        working-directory: vcmi-src
+        run: |
+          curl --fail --location --retry 3 --output dependencies-ios.txz \
+            https://github.com/vcmi/vcmi-dependencies/releases/download/2026-10-13/dependencies-ios.txz
+          conan cache restore dependencies-ios.txz
+          rm dependencies-ios.txz
       - name: Resolve iOS dependencies
         working-directory: vcmi-src
         run: |
           conan profile detect --force
-          conan install . --output-folder=conan-generated --build=missing \
+          conan install . --output-folder=conan-generated --build=never \
             --profile=dependencies/conan_profiles/ios-arm64 \
             --profile=dependencies/conan_profiles/base/apple-system \
             -s '&:build_type=Debug'
