@@ -30,6 +30,8 @@ jobs:
           python3 ios-native/verify_patch.py vcmi-src
           git -C vcmi-src diff --check
           echo "VCMI native iOS customization validated"
+          echo "## Heroes III Mobile v0.8: non-overlapping adventure dock" >> "$GITHUB_STEP_SUMMARY"
+          echo "Validated dock geometry, iOS-only map viewport reservation, and all six native controls." >> "$GITHUB_STEP_SUMMARY"
   build-native-ios:
     needs: validate
     runs-on: macos-15
