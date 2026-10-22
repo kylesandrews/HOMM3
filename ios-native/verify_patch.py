@@ -26,4 +26,17 @@ for button in buttons:
     assert button["mobileTouchTarget"] is True
     assert button["area"]["width"] >= 44 and button["area"]["height"] >= 44
     assert button["area"]["left"] + button["area"]["width"] <= dock["area"]["width"]
+# Ensure the fixed-size action dock fits classic small iPhone landscape views
+# as well as newer large iPhone/iPad viewport sizes.
+area = dock["area"]
+for screen_w, screen_h in [(568, 320), (667, 375), (812, 375),
+                           (852, 393), (1024, 768), (1194, 834)]:
+    assert screen_w > dock["exists"]["widthMin"]
+    assert screen_h > dock["exists"]["heightMin"]
+    left = screen_w - area["right"] - area["width"]
+    top = screen_h - area["bottom"] - area["height"]
+    assert left >= 0, (screen_w, left)
+    assert top >= 0, (screen_h, top)
+    assert left + area["width"] <= screen_w - 199
+    assert top + area["height"] <= screen_h - 47
 print("Native VCMI iOS source and mobile action dock: passed")
