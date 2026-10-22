@@ -120,8 +120,14 @@ def package(base_ipa: Path, extracted_dir: Path, result_ipa: Path, mode: str, *,
         finally:
             if tmp.exists():
                 tmp.unlink()
+    digest_hash = hashlib.sha256()
     with result_ipa.open("rb") as completed:
-        digest = hashlib.file_digest(completed, "sha256").hexdigest()
+        while True:
+            chunk = completed.read(1024 * 1024)
+            if not chunk:
+                break
+            digest_hash.update(chunk)
+    digest = digest_hash.hexdigest()
     manifest = {"mode": mode, "kind":"self-contained unsigned VCMI iOS IPA", "asset_count":len(assets),"asset_source_bytes":total_bytes,"ipa_bytes":result_ipa.stat().st_size, "ipa_sha256":digest,"asset_paths":[x for x in GAME_DIRS if any(dest.startswith(APP+x+"/") for _,dest in assets)],"game_files_publicly_redistributable": False,"signed":False,"requires_data_import_after_install":False,"requires_apple_signing":True}
     result_ipa.with_suffix(".manifest.json").write_text(json.dumps(manifest, indent=2)+"\n",encoding="utf-8")
     return manifest
