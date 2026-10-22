@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preflight source and layout checks for the Heroes III iOS client."""
+"""Check the custom iOS adventure-map layout against native VCMI geometry."""
 import json
 import re
 import sys
@@ -11,12 +11,15 @@ layout = (root / "config/widgets/adventureMap.json").read_text()
 assert "#ifndef VCMI_IOS" in cpp
 assert 'input["exists"]["iosOnly"].Bool()' in cpp
 assert 'input["mobileTouchTarget"].Bool()' in cpp
-# VCMI widget JSON permits comments.
-clean = re.sub(r"//[^\n]*", "", layout)
-data = json.loads(clean)
+assert "area.h = std::max(1, area.h - 63);" in cpp
+data = json.loads(re.sub(r"//[^\n]*", "", layout))
 dock = next(x for x in data["items"] if x.get("name") == "iosQuickActions")
-assert dock["exists"]["iosOnly"] is True
+assert dock["exists"] == {"iosOnly": True, "widthMin": 560, "heightMin": 300}
 assert dock["hideWhen"] == "worldViewMode"
+area = dock["area"]
+assert area == {"left": 7, "right": 199, "bottom": 47, "height": 63}
+background = next(x for x in dock["items"] if x["name"] == "iosQuickActionsBackground")
+assert background["area"] == {"left": 0, "right": 0, "top": 0, "bottom": 0}
 buttons = [x for x in dock["items"] if x["type"] == "adventureMapButton"]
 expected = ("adventureKingdomOverview", "adventureQuestLog",
             "adventureMoveHero", "adventureCastSpell", "adventureNextHero",
@@ -25,18 +28,29 @@ assert tuple(x["hotkey"] for x in buttons) == expected
 for button in buttons:
     assert button["mobileTouchTarget"] is True
     assert button["area"]["width"] >= 44 and button["area"]["height"] >= 44
-    assert button["area"]["left"] + button["area"]["width"] <= dock["area"]["width"]
-# Ensure the fixed-size action dock fits classic small iPhone landscape views
-# as well as newer large iPhone/iPad viewport sizes.
-area = dock["area"]
+
+# Each layout measurement uses the same rules as AdventureMapWidget::readArea.
 for screen_w, screen_h in [(568, 320), (667, 375), (812, 375),
                            (852, 393), (1024, 768), (1194, 834)]:
     assert screen_w > dock["exists"]["widthMin"]
     assert screen_h > dock["exists"]["heightMin"]
-    left = screen_w - area["right"] - area["width"]
-    top = screen_h - area["bottom"] - area["height"]
-    assert left >= 0, (screen_w, left)
-    assert top >= 0, (screen_h, top)
-    assert left + area["width"] <= screen_w - 199
-    assert top + area["height"] <= screen_h - 47
-print("Native VCMI iOS source and mobile action dock: passed")
+    dock_w = screen_w - area["left"] - area["right"]
+    dock_x = area["left"]
+    dock_y = screen_h - area["bottom"] - area["height"]
+    assert dock_w >= 362
+    assert dock_y >= 7
+    # The map ends at this strip's top after the iOS-only height adjustment.
+    map_bottom = screen_h - 47 - 63
+    assert map_bottom == dock_y
+    edges = []
+    for button in buttons:
+        b = button["area"]
+        x = dock_x + dock_w - b["right"] - b["width"]
+        y = dock_y + b["top"]
+        assert x >= dock_x
+        assert x + b["width"] <= dock_x + dock_w
+        assert y >= dock_y
+        assert y + b["height"] <= dock_y + area["height"]
+        edges.append((x, x + b["width"]))
+    assert all(edges[i][1] <= edges[i + 1][0] for i in range(len(edges)-1))
+print("iOS non-overlapping action dock and map viewport: passed")
