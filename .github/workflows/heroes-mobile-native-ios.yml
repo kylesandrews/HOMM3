@@ -90,7 +90,34 @@ jobs:
           ditto "$APP" ipa-staging/Payload/vcmiclient.app
           (cd ipa-staging && ditto -c -k --sequesterRsrc --keepParent Payload ../vcmi-ios-unsigned.ipa)
           python3 ios-native/verify_ipa.py vcmi-ios-unsigned.ipa
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import Path
+          src = Path("ios-native/overrides/config/widgets/adventureMap.json").read_bytes()
+          with zipfile.ZipFile("vcmi-ios-unsigned.ipa") as bundle:
+              packaged = bundle.read("Payload/vcmiclient.app/config/widgets/adventureMap.json")
+          assert packaged == src, "Bundled adventureMap.json does not match this source revision"
+          print("Verified: IPA includes the current, exact mobile adventure layout")
+          PY
           shasum -a 256 vcmi-ios-unsigned.ipa > vcmi-ios-unsigned.sha256
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import subprocess
+          from pathlib import Path
+          ipa = Path("vcmi-ios-unsigned.ipa")
+          manifest = {
+              "project": "Heroes III Mobile (unofficial)",
+              "source_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+              "upstream_vcmi": subprocess.check_output(["git", "-C", "vcmi-src", "rev-parse", "HEAD"], text=True).strip(),
+              "target": "iPhoneOS-arm64",
+              "unsigned": True,
+              "original_game_assets_included": False,
+              "ipa_sha256": hashlib.sha256(ipa.read_bytes()).hexdigest(),
+          }
+          Path("vcmi-ios-buildinfo.json").write_text(json.dumps(manifest, indent=2) + "\\n")
+          print(json.dumps(manifest, indent=2))
+          PY
           ls -lh vcmi-ios-unsigned.ipa vcmi-ios-unsigned-app.zip
       - name: Upload native patch and app build outputs
         if: always()
@@ -102,4 +129,5 @@ jobs:
             vcmi-ios-unsigned-app.zip
             vcmi-ios-unsigned.ipa
             vcmi-ios-unsigned.sha256
+            vcmi-ios-buildinfo.json
           if-no-files-found: warn
