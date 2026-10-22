@@ -2,6 +2,12 @@
 
 This is a custom build of the **VCMI** engine for **Heroes of Might and Magic III: Complete Edition**. It is not a commercially licensed Heroes III release. The current UI customization adds six landscape adventure-map controls and larger touch targets.
 
+## Building from source on an Apple Silicon Mac
+
+From a clone of this repository checked out on the `ios-native-port` branch, run `bash ios-native/build-ios-local.sh`. The script checks tools, applies our custom VCMI changes, compiles an unsigned iPhoneOS application, packages `out/vcmi-ios-unsigned.ipa`, and verifies the package. It does not import GOG game files.
+
+This particular local script uses prebuilt dependencies with Apple Silicon-hosted Qt tools. For Intel Macs, use the [GitHub Actions build](https://github.com/kylesandrews/HOMM3/actions/workflows/heroes-mobile-native-ios.yml) or follow VCMI's Intel-specific host-tool instructions.
+
 ## What you need
 
 - An iPhone/iPad running a supported iOS version (the compiled test bundle has an iOS 12 minimum).
