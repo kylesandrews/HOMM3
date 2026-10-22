@@ -37,6 +37,29 @@ def check(ipa_path: Path):
             raise ValueError("Found GOG installer files in distributable IPA")
         if not info.get("UIFileSharingEnabled"):
             raise ValueError("Game data transfer requires UIFileSharingEnabled")
+        required_resources = [
+            "config/widgets/adventureMap.json",
+            "Mods/vcmi/mod.json",
+            "LaunchScreen.storyboardc/Info.plist",
+        ]
+        for relative in required_resources:
+            if app + relative not in names:
+                raise ValueError(f"Missing required runtime resource: {relative}")
+        # Confirm the actual IPA contains our *modified* adventure-map layout,
+        # not just an executable compiled from modified source.
+        layout_text = z.read(app + "config/widgets/adventureMap.json").decode("utf-8")
+        if '"name": "iosQuickActions"' not in layout_text and '"name" : "iosQuickActions"' not in layout_text:
+            raise ValueError("Custom iOS action dock was not bundled in the app")
+        for action in ("iosQuickKingdom", "iosQuickQuest", "iosQuickMove",
+                       "iosQuickCast", "iosQuickNextHero", "iosQuickEndTurn"):
+            if action not in layout_text:
+                raise ValueError(f"Missing custom iOS action: {action}")
+        # The app should retain the upstream launcher for GOG data import.
+        # This is a linked-symbol / static-string check, not a runtime UI test.
+        with z.open(app + "vcmiclient") as executable:
+            executable_bytes = executable.read()
+        if b"VCMI_LAUNCH_TYPE" not in executable_bytes or b"qt_main_wrapper" not in executable_bytes:
+            raise ValueError("Native launcher entry point appears to be missing")
         return {"archive": str(ipa_path), "bundle_id": info.get("CFBundleIdentifier"),
                 "platform": "iPhoneOS", "architecture": "arm64",
                 "minimum_ios": info.get("MinimumOSVersion"),
