@@ -117,10 +117,11 @@ jobs:
               "original_game_assets_included": False,
               "ipa_sha256": hashlib.sha256(ipa.read_bytes()).hexdigest(),
           }
-          Path("vcmi-ios-buildinfo.json").write_text(json.dumps(manifest, indent=2) + "\\n")
+          Path("vcmi-ios-buildinfo.json").write_text(json.dumps(manifest, indent=2) + "\n")
           print(json.dumps(manifest, indent=2))
           PY
           ls -lh vcmi-ios-unsigned.ipa vcmi-ios-unsigned-app.zip
+          python3 -m json.tool vcmi-ios-buildinfo.json > /dev/null
       - name: Upload native patch and app build outputs
         if: always()
         uses: actions/upload-artifact@v4
