@@ -6,12 +6,15 @@ This repository is developing a **touch-optimized iOS build of [VCMI](https://gi
 
 ## Download the unsigned test build
 
-- [GitHub Actions builds](https://github.com/kylesandrews/HOMM3/actions/workflows/heroes-mobile-native-ios.yml) — open the newest **successful** run, download the artifact named `heroes-iii-ios-native-build`, then extract `vcmi-ios-unsigned.ipa` (or use the earlier verified [Build #2 artifact](https://github.com/kylesandrews/HOMM3/actions/runs/39820520554/artifacts/12445650701) containing a `.app` ZIP).
+- [Verified native v0.8 build #5](https://github.com/kylesandrews/HOMM3/actions/runs/39830594417/artifacts/12448653647) — download the GitHub artifact ZIP, then extract `vcmi-ios-unsigned.ipa`. This version includes the **reserved, non-overlapping mobile action strip**. Apple signing is required before installation.
+- [GitHub Actions build history](https://github.com/kylesandrews/HOMM3/actions/workflows/heroes-mobile-native-ios.yml)
+- [Physical device test matrix](https://github.com/kylesandrews/HOMM3/blob/ios-native-port/ios-native/DEVICE_TEST_PLAN.md)
+- [Apple Silicon local native build script](https://github.com/kylesandrews/HOMM3/blob/ios-native-port/ios-native/build-ios-local.sh)
 - [iPhone installation instructions](https://github.com/kylesandrews/HOMM3/blob/ios-native-port/ios-native/INSTALL_IPHONE.md)
 - [Native iOS source customization](https://github.com/kylesandrews/HOMM3/tree/ios-native-port)
 - [Upstream iOS build instructions](https://github.com/vcmi/vcmi/blob/develop/docs/developers/Building_iOS.md)
 
-The custom adventure-map toolbar includes **Kingdom, Quest Log, Move Hero, Cast Spell, Next Hero, End Turn**, uses VCMI's original game commands, and targets smaller landscape iPhones as well as larger screens.
+The custom adventure-map toolbar includes **Kingdom, Quest Log, Move Hero, Cast Spell, Next Hero, End Turn**, uses VCMI's original game commands, and targets smaller landscape iPhones as well as larger screens. The iOS map viewport is shortened to reserve a separate control strip, so gameplay tiles are not obscured.
 
 ## Getting your Complete Edition data into the app
 
@@ -24,5 +27,8 @@ Do not commit the game installer or original assets to a public GitHub repositor
 The main branch workflow checks out the engine at a fixed upstream revision, applies the modified source from the `ios-native-port` branch, resolves the official iOS Conan dependency cache, compiles with Xcode, packages an unsigned IPA, validates its contents, and uploads the artifact.
 
 ## Attribution and licensing
+
+VCMI's [GPL v2 license text](VCMI-GPL-2.0-LICENSE.txt) is preserved here. GOG installers, maps, sound packs, and Apple signing credentials are intentionally excluded from build artifacts. Existing tracked proprietary files must be removed separately; adding ignore patterns does not untrack them.
+
 
 This is an independent, unofficial project. It is not affiliated with Ubisoft, New World Computing, 3DO, or the VCMI project. VCMI is GPL-2.0-or-later; share modifications under the applicable license. Original Heroes III game data remains separately licensed and is not part of the compiled application.
