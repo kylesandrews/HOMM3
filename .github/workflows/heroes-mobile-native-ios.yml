@@ -80,16 +80,18 @@ jobs:
         working-directory: vcmi-src
         run: |
           cmake --build out/build/ios-device-conan --target vcmiclient --config Debug -- -quiet CODE_SIGNING_ALLOWED=NO
-      - name: Package compiled app if available
-        if: success()
+      - name: Package unsigned iOS app and IPA
         run: |
-          APP=$(find vcmi-src/out/build/ios-device-conan -type d -name '*.app' | head -1)
-          if [ -n "$APP" ]; then
-            ditto -c -k --sequesterRsrc --keepParent "$APP" vcmi-ios-unsigned-app.zip
-            echo "Unsigned app archived: $APP"
-          else
-            echo "No .app bundle located after compile"
-          fi
+          APP="vcmi-src/out/build/ios-device-conan/bin/Debug/vcmiclient.app"
+          test -f "$APP/vcmiclient"
+          test -f "$APP/Info.plist"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" vcmi-ios-unsigned-app.zip
+          mkdir -p ipa-staging/Payload
+          ditto "$APP" ipa-staging/Payload/vcmiclient.app
+          (cd ipa-staging && ditto -c -k --sequesterRsrc --keepParent Payload ../vcmi-ios-unsigned.ipa)
+          python3 ios-native/verify_ipa.py vcmi-ios-unsigned.ipa
+          shasum -a 256 vcmi-ios-unsigned.ipa > vcmi-ios-unsigned.sha256
+          ls -lh vcmi-ios-unsigned.ipa vcmi-ios-unsigned-app.zip
       - name: Upload native patch and app build outputs
         if: always()
         uses: actions/upload-artifact@v4
@@ -98,4 +100,6 @@ jobs:
           path: |
             native-ios-customizations.diff
             vcmi-ios-unsigned-app.zip
+            vcmi-ios-unsigned.ipa
+            vcmi-ios-unsigned.sha256
           if-no-files-found: warn
