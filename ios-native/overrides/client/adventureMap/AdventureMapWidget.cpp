@@ -241,6 +241,13 @@ std::shared_ptr<CIntObject> AdventureMapWidget::buildMapContainer(const JsonNode
 std::shared_ptr<CIntObject> AdventureMapWidget::buildMapGameArea(const JsonNode & input)
 {
 	Rect area = readTargetArea(input["area"]);
+#ifdef VCMI_IOS
+	// A dedicated strip at the bottom of the landscape adventure map prevents
+	// the mobile action dock from covering map tiles or hero path destinations.
+	// Keep the original map area in portrait / compact unsupported layouts.
+	if (pos.w > pos.h && pos.w > 560 && pos.h > 300)
+		area.h = std::max(1, area.h - 63);
+#endif
 	mapView = std::make_shared<MapView>(area.topLeft(), area.dimensions());
 	return mapView;
 }
