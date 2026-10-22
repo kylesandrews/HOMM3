@@ -1,0 +1,36 @@
+# Never commit proprietary Heroes of Might and Magic III game data.
+# The original Complete Edition GOG installer must be imported by each user.
+*.exe
+*.bin
+*.lod
+*.snd
+*.vid
+*.h3m
+*.h3c
+*.mp3
+*.pac
+*.wog
+
+# Extracted GOG installation folders (user-provided, not engine source)
+Data/
+Maps/
+Mp3/
+Heroes3Complete/
+game-assets/
+original-game-data/
+original-assets/
+
+# Local macOS / iOS builds and credentials
+.DS_Store
+DerivedData/
+out/
+build/
+*.ipa
+*.app/
+*.xcarchive/
+*.mobileprovision
+*.p12
+*.p8
+*.cer
+*.key
+*.pem
