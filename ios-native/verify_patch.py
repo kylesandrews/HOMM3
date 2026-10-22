@@ -3,6 +3,7 @@
 import json
 import re
 import sys
+import subprocess
 from pathlib import Path
 
 root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("vcmi-src")
@@ -53,4 +54,8 @@ for screen_w, screen_h in [(568, 320), (667, 375), (812, 375),
         assert y + b["height"] <= dock_y + area["height"]
         edges.append((x, x + b["width"]))
     assert all(edges[i][1] <= edges[i + 1][0] for i in range(len(edges)-1))
+# A portable preflight for the optional Apple Silicon local build script.
+script = Path(__file__).with_name("build-ios-local.sh")
+if script.exists():
+    subprocess.run(["bash", "-n", str(script)], check=True)
 print("iOS non-overlapping action dock and map viewport: passed")
