@@ -269,23 +269,13 @@
 						"widthMin": 560,
 						"heightMin": 300
 				},
-				"area": {
-						"right": 199,
-						"bottom": 52,
-						"width": 360,
-						"height": 58
-				},
+				"area": {"left": 7, "right": 199, "bottom": 47, "height": 63},
 				"items": [
 						{
 								"type": "adventureMapImage",
 								"name": "iosQuickActionsBackground",
 								"image": "DiBoxBck.pcx",
-								"area": {
-										"top": 0,
-										"left": 0,
-										"width": 360,
-										"height": 58
-								},
+								"area": {"top": 0, "left": 0, "right": 0, "bottom": 0},
 								"sourceArea": {
 										"left": 0,
 										"top": 0,
@@ -301,12 +291,7 @@
 								"hotkey": "adventureKingdomOverview",
 								"playerColored": true,
 								"mobileTouchTarget": true,
-								"area": {
-										"top": 6,
-										"left": 8,
-										"width": 46,
-										"height": 46
-								}
+								"area": {"top": 8, "right": 306, "width": 46, "height": 46}
 						},
 						{
 								"type": "adventureMapButton",
@@ -316,12 +301,7 @@
 								"hotkey": "adventureQuestLog",
 								"playerColored": true,
 								"mobileTouchTarget": true,
-								"area": {
-										"top": 6,
-										"left": 56,
-										"width": 46,
-										"height": 46
-								}
+								"area": {"top": 8, "right": 258, "width": 46, "height": 46}
 						},
 						{
 								"type": "adventureMapButton",
@@ -331,12 +311,7 @@
 								"hotkey": "adventureMoveHero",
 								"playerColored": true,
 								"mobileTouchTarget": true,
-								"area": {
-										"top": 6,
-										"left": 104,
-										"width": 46,
-										"height": 46
-								}
+								"area": {"top": 8, "right": 210, "width": 46, "height": 46}
 						},
 						{
 								"type": "adventureMapButton",
@@ -346,12 +321,7 @@
 								"hotkey": "adventureCastSpell",
 								"playerColored": true,
 								"mobileTouchTarget": true,
-								"area": {
-										"top": 6,
-										"left": 152,
-										"width": 46,
-										"height": 46
-								}
+								"area": {"top": 8, "right": 162, "width": 46, "height": 46}
 						},
 						{
 								"type": "adventureMapButton",
@@ -361,12 +331,7 @@
 								"hotkey": "adventureNextHero",
 								"playerColored": true,
 								"mobileTouchTarget": true,
-								"area": {
-										"top": 6,
-										"left": 200,
-										"width": 70,
-										"height": 46
-								}
+								"area": {"top": 8, "right": 90, "width": 70, "height": 46}
 						},
 						{
 								"type": "adventureMapButton",
@@ -376,12 +341,7 @@
 								"hotkey": "adventureEndTurn",
 								"playerColored": true,
 								"mobileTouchTarget": true,
-								"area": {
-										"top": 6,
-										"left": 277,
-										"width": 70,
-										"height": 46
-								}
+								"area": {"top": 8, "right": 13, "width": 70, "height": 46}
 						}
 				]
 		},
