@@ -1,0 +1,90 @@
+name: Build Heroes III Mobile native iOS
+on:
+  workflow_dispatch:
+    inputs:
+      vcmi_revision:
+        description: Pinned VCMI source revision
+        required: true
+        default: bae8bafd2ec3bbf7ec2cacea5c6868ed3b019405
+        type: string
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ios-native-port
+      - name: Fetch upstream sources and verify modified UI
+        run: |
+          git clone --filter=blob:none https://github.com/vcmi/vcmi.git vcmi-src
+          git -C vcmi-src checkout --detach '${{ inputs.vcmi_revision }}'
+          cp ios-native/overrides/client/adventureMap/AdventureMapWidget.cpp vcmi-src/client/adventureMap/AdventureMapWidget.cpp
+          cp ios-native/overrides/config/widgets/adventureMap.json vcmi-src/config/widgets/adventureMap.json
+          python3 ios-native/verify_patch.py vcmi-src
+          git -C vcmi-src diff --check
+          echo "VCMI native iOS customization validated"
+  build-native-ios:
+    needs: validate
+    runs-on: macos-15
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ios-native-port
+      - name: Install Xcode build prerequisites
+        run: |
+          xcodebuild -version
+          brew install cmake conan
+          conan --version
+      - name: Clone VCMI and pinned submodules
+        run: |
+          git clone --recurse-submodules https://github.com/vcmi/vcmi.git vcmi-src
+          git -C vcmi-src checkout --detach '${{ inputs.vcmi_revision }}'
+          git -C vcmi-src submodule update --init --recursive
+      - name: Apply native iOS overrides
+        run: |
+          cp ios-native/overrides/client/adventureMap/AdventureMapWidget.cpp vcmi-src/client/adventureMap/AdventureMapWidget.cpp
+          cp ios-native/overrides/config/widgets/adventureMap.json vcmi-src/config/widgets/adventureMap.json
+          python3 ios-native/verify_patch.py vcmi-src
+          git -C vcmi-src diff --check
+          git -C vcmi-src diff > native-ios-customizations.diff
+      - name: Resolve iOS dependencies
+        working-directory: vcmi-src
+        run: |
+          conan profile detect --force
+          conan install . --output-folder=conan-generated --build=missing \
+            --profile=dependencies/conan_profiles/ios-arm64 \
+            --profile=dependencies/conan_profiles/base/apple-system \
+            -s '&:build_type=Debug'
+      - name: Configure Xcode project (unsigned)
+        working-directory: vcmi-src
+        run: |
+          cmake --preset ios-device-conan -B out/build/ios-device-conan \
+            -D BUNDLE_IDENTIFIER_PREFIX=com.heroes3.mobileci \
+            -D CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
+      - name: Compile modified VCMI
+        working-directory: vcmi-src
+        run: |
+          cmake --build out/build/ios-device-conan --target vcmiclient --config Debug -- -quiet CODE_SIGNING_ALLOWED=NO
+      - name: Package compiled app if available
+        if: success()
+        run: |
+          APP=$(find vcmi-src/out/build/ios-device-conan -type d -name '*.app' | head -1)
+          if [ -n "$APP" ]; then
+            ditto -c -k --sequesterRsrc --keepParent "$APP" vcmi-ios-unsigned-app.zip
+            echo "Unsigned app archived: $APP"
+          else
+            echo "No .app bundle located after compile"
+          fi
+      - name: Upload native patch and app build outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heroes-iii-ios-native-build
+          path: |
+            native-ios-customizations.diff
+            vcmi-ios-unsigned-app.zip
+          if-no-files-found: warn
