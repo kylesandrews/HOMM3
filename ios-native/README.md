@@ -1,27 +1,30 @@
-# Heroes III Mobile — native VCMI port
+# Heroes III Mobile — native VCMI iOS build
 
-This branch contains an **iOS adaptation of VCMI**, targeting **Heroes of Might and Magic III Complete** (Restoration of Erathia, Armageddon's Blade and Shadow of Death). This is not a complete game distribution and no copyrighted game data is included.
+This branch implements an independent, touch-adapted VCMI iOS client for **Heroes of Might and Magic III: Complete Edition**. No original game files are distributed.
 
 ## Native implementation
 
-- Pinned upstream engine revision: `bae8bafd2ec3bbf7ec2cacea5c6868ed3b019405`.
-- A new landscape adventure-map quick-action dock: Kingdom, Quest, Move, Cast, Next Hero and End Turn.
-- On iOS, mobile quick buttons use larger 44+ logical pixel touch targets.
-- Existing VCMI commands are used; turn logic, maps, combat and AI remain upstream.
-- `.github/workflows/heroes-ios.yml` attempts an **unsigned iOS build** on macOS when this branch changes.
+- Engine source pinned to [VCMI bae8baf](https://github.com/vcmi/vcmi/commit/bae8bafd2ec3bbf7ec2cacea5c6868ed3b019405).
+- Landscape action bar with six real VCMI commands: Kingdom, Quest Log, Move Hero, Cast Spell, Next Hero and End Turn.
+- iOS-only hit targets of at least 44 logical pixels; keeps original native controls on desktop.
+- **Dedicated 63-pixel control strip:** adventure-map viewport is shortened by the same amount on supported landscape screens so gameplay tiles are not hidden underneath buttons.
+- Responsive dock positioning is checked for six compact-to-tablet landscape viewports.
+- Original VCMI engine implements maps, combat, AI, save files and campaigns. The separate SwiftUI prototype does not supply real gameplay.
 
-## Build and testing
+## Builds and testing
 
-The source files in `ios-native/overrides/` replace corresponding upstream files in a checkout of the pinned engine. GitHub Actions applies the overrides and compiles `vcmiclient` with the official Conan + CMake iOS build preset. See the workflow log for the result.
+[Native macOS build workflow](https://github.com/kylesandrews/HOMM3/actions/workflows/heroes-mobile-native-ios.yml) runs from the repository main branch, checks out this source branch, restores official VCMI iOS dependencies, compiles for iPhoneOS ARM64, packages an unsigned IPA and tests the bundled launcher, resources and button layout.
 
-After compilation succeeds, code signing requires an Apple Developer Team, and playing requires the original GOG Complete Edition offline installer pair, imported through VCMI's own installer interface. No GOG installers, music, maps or other game assets should be committed to this public repository.
+[Build #3](https://github.com/kylesandrews/HOMM3/actions/runs/39826486075) successfully compiled and packaged the earlier native layout. The reserved control-strip change above is pending its own successful native compilation and on-device testing.
 
-**Status:** Native iOS source changes are implemented. A successful macOS compilation, installation and real gameplay test are still required before declaring a playable custom port. The existing SwiftUI prototype is a separate demonstration and should not be represented as VCMI gameplay.
+For actual use:
+- [iPhone installation / game data import](INSTALL_IPHONE.md)
+- [Physical-device acceptance tests](DEVICE_TEST_PLAN.md)
+- Apple's development signing or a trusted sideloading tool is required to install an unsigned IPA.
+- Import your legally obtained Complete Edition GOG offline installer `.exe` and matching `.bin` through the VCMI launcher. Alternatively copy extracted `Data`, `Maps`, and optionally `Mp3` to the app's Documents folder.
 
-## Legal
+**Release definition:** An unsigned successful compiler build is not evidence of complete gameplay. The port remains in testing until launching, combat, saving/loading and Complete Edition content have been checked on an actual iPhone or iPad.
 
-VCMI is GPL-2.0-or-later. Distribution of any modified engine binaries must comply with that license; the proprietary original game files remain separately user-provided.
+## Licensing and attribution
 
-Build reference: https://github.com/vcmi/vcmi/blob/develop/docs/developers/Building_iOS.md
-
-Installer reference: https://github.com/vcmi/vcmi/blob/develop/docs/players/Installation_iOS.md
+VCMI is available under GPL-2.0-or-later, with the [upstream license text](https://github.com/kylesandrews/HOMM3/blob/main/VCMI-GPL-2.0-LICENSE.txt) preserved in this repository. Original Heroes III game files are copyright-protected and must remain user-supplied. This is an independent, unofficial project.
