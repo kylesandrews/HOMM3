@@ -16,6 +16,14 @@ This repository is developing a **touch-optimized iOS build of [VCMI](https://gi
 
 The custom adventure-map toolbar includes **Kingdom, Quest Log, Move Hero, Cast Spell, Next Hero, End Turn**, uses VCMI's original game commands, and targets smaller landscape iPhones as well as larger screens. The iOS map viewport is shortened to reserve a separate control strip, so gameplay tiles are not obscured.
 
+## Private self-contained build (no game-file import required)
+
+The [standalone IPA packager](https://github.com/kylesandrews/HOMM3/blob/ios-native-port/ios-native/standalone/README.md) is on the [ios-native-port branch](https://github.com/kylesandrews/HOMM3/tree/ios-native-port/ios-native/standalone). Download the unsigned engine build, extract your own GOG Complete Edition `.exe` and matching `.bin` locally, then embed the resulting `Data`, `Maps` and optional `Mp3` in one **unsigned** IPA using the offline packager. Sign the completed IPA before installation. No post-install import is necessary because VCMI searches the app bundle root for game files.
+
+[Standalone packaging tests — successful](https://github.com/kylesandrews/HOMM3/actions/runs/39834935050). These tests use simulated files, not original copyrighted Heroes III data.
+
+**Redistribution restriction:** A GOG purchase is a personal-use license and does not grant public redistribution rights for the original Heroes III assets. Keep the game-data-inclusive IPA private unless you have a separate rights-holder license authorizing distribution. The open-source engine-only IPA is appropriate for public distribution subject to VCMI's GPL terms.
+
 ## Getting your Complete Edition data into the app
 
 The engine is open-source, but the original game content is not. You must supply your own GOG offline installer `.exe` and matching `.bin`; the iOS VCMI launcher normally offers an import flow. Alternatively transfer `Data`, `Maps`, and optionally `Mp3` to the application's Documents folder using iOS Files/Finder.
