@@ -33,3 +33,16 @@ The script locates the `Data`, `Maps` and optional `Mp3` directories, validates 
 This tool provides a private self-contained test build; actual gameplay and save/load still need physical device verification. For a publicly shareable edition, obtain redistribution rights for every bundled Heroes III asset or replace them all with assets licensed for distribution. The GOG data alone does not confer those rights.
 
 Run Python tests from the standalone folder: `python3 -m unittest -v test_packaging.py`.
+
+## One-command personal build
+
+Download the unsigned engine-only IPA, keep your matching GOG `.exe` and `-1.bin` together locally, then run:
+
+```bash
+bash ios-native/standalone/build_personal_ipa.sh \
+  '/private/GOG/setup_heroes_of_might_and_magic_3_complete_4.0_(3.2)_gog_0.1_(77075).exe' \
+  '/private/vcmi-ios-unsigned.ipa' \
+  '/private/HeroesIII-personal-unsigned.ipa'
+```
+
+This extracts the GOG game files into a temporary private folder, embeds them in the IPA, and removes the temporary extraction after packaging. It never uploads the original assets. The result must still be signed for iPhone installation and cannot be publicly redistributed without relevant rights-holder permission.
