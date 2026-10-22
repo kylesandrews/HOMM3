@@ -14,6 +14,11 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "ERROR: This script requires macOS / Xcode." >&2
   exit 1
 fi
+if [[ "$(uname -m)" != "arm64" ]]; then
+  echo "ERROR: The official prebuilt iOS Conan cache contains Apple Silicon host tools." >&2
+  echo "Use the macOS GitHub Actions workflow, or follow the VCMI Intel-Mac Qt host-tool instructions." >&2
+  exit 1
+fi
 for cmd in xcodebuild git cmake conan curl ditto python3; do
   command -v "$cmd" >/dev/null || { echo "Missing prerequisite: $cmd" >&2; exit 1; }
 done
