@@ -1,0 +1,58 @@
+name: Heroes III Mobile native iOS build
+on:
+  push:
+    branches: [ios-native-port]
+    paths:
+      - 'ios-native/**'
+      - '.github/workflows/heroes-ios.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install prerequisites
+        run: |
+          brew install conan cmake
+          xcodebuild -version
+          conan --version
+      - name: Checkout pinned VCMI source
+        run: |
+          git clone --recurse-submodules https://github.com/vcmi/vcmi.git vcmi-src
+          git -C vcmi-src checkout --detach bae8bafd2ec3bbf7ec2cacea5c6868ed3b019405
+          git -C vcmi-src submodule update --init --recursive
+      - name: Apply native iOS mobile changes
+        run: |
+          cp ios-native/overrides/client/adventureMap/AdventureMapWidget.cpp vcmi-src/client/adventureMap/AdventureMapWidget.cpp
+          cp ios-native/overrides/config/widgets/adventureMap.json vcmi-src/config/widgets/adventureMap.json
+          git -C vcmi-src diff --check
+          python3 ios-native/verify_patch.py vcmi-src
+      - name: Configure Conan
+        working-directory: vcmi-src
+        run: |
+          conan profile detect --force
+          conan install . --output-folder=conan-generated --build=missing \
+            --profile=dependencies/conan_profiles/ios-arm64 \
+            --profile=dependencies/conan_profiles/base/apple-system \
+            -s '&:build_type=Debug'
+      - name: Generate Xcode build
+        working-directory: vcmi-src
+        run: |
+          cmake --preset ios-device-conan -B out/build/ios-device-conan \
+            -D BUNDLE_IDENTIFIER_PREFIX=com.homm3mobile.dev \
+            -D CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
+      - name: Compile native vcmiclient
+        working-directory: vcmi-src
+        run: |
+          cmake --build out/build/ios-device-conan --target vcmiclient --config Debug -- -quiet CODE_SIGNING_ALLOWED=NO
+      - name: Upload diagnostic diff
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-ios-source-diff
+          path: |
+            vcmi-src/client/adventureMap/AdventureMapWidget.cpp
+            vcmi-src/config/widgets/adventureMap.json
