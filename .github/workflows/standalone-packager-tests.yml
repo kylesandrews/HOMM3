@@ -18,7 +18,7 @@ jobs:
       - name: Python syntax
         run: python3 -m py_compile ios-native/standalone/pack_standalone.py ios-native/standalone/test_packaging.py
       - name: GOG extraction helper syntax
-        run: bash -n ios-native/standalone/prepare_gog.sh ios-native/standalone/build_personal_ipa.sh
+        run: bash -n ios-native/standalone/prepare_gog.sh ios-native/standalone/build_personal_ipa.sh "ios-native/standalone/Build Private IPA.command"
       - name: Offline packaging test suite
         working-directory: ios-native/standalone
         run: python3 -m unittest -v test_packaging.py
