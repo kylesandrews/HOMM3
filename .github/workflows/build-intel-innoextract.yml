@@ -34,6 +34,17 @@ jobs:
                   p.write_text(new)
                   print("Updated old CMake policy minimum:",p)
           PY
+          # Boost 1.92 no longer transitively includes directory_iterator in
+          # filesystem/operations.hpp. Upstream innoextract 1.9 predates this.
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("innoextract-1.9/src/stream/slice.cpp")
+          text = path.read_text()
+          original = "#include <boost/filesystem/operations.hpp>"
+          assert text.count(original) == 1
+          path.write_text(text.replace(original,
+              original + "\\n#include <boost/filesystem/directory.hpp>"))
+          PY
       - name: Configure macOS 12 x86_64 compatible standalone extractor
         run: |
           cmake -S innoextract-1.9 -B innoextract-1.9/build \
