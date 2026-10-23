@@ -18,7 +18,7 @@ import zipfile
 
 APP = "Payload/vcmiclient.app/"
 GAME_DIRS = ("Data", "Maps", "Mp3")
-REQUIRED_DATA = ("h3bitmap.lod", "h3sprite.lod")
+REQUIRED_DATA = ("h3bitmap.lod", "h3sprite.lod", "h3ab_bmp.lod", "h3ab_spr.lod")
 DISPLAY_NAME = "Heroes III Mobile"
 
 class PackagingError(Exception):
@@ -68,7 +68,11 @@ def collect_assets(root: Path):
                 if any(part in ("..", "") for part in rel.parts):
                     raise PackagingError(f"Unsafe path: {rel}")
                 output.append((p, APP + rel.as_posix()))
-    if len(output) < 3 or not any(f.lower().endswith((".h3m", ".h3c")) for _, f in output):
+    available_data = {p.name.casefold() for p in found["data"].iterdir() if p.is_file()}
+    missing = sorted(set(REQUIRED_DATA) - available_data)
+    if missing:
+        raise PackagingError("Incomplete Heroes III Complete Edition data: missing " + ", ".join(missing) + ". Ensure the original GOG installer and matching -1.bin were both extracted.")
+    if len(output) < 5 or not any(f.lower().endswith((".h3m", ".h3c")) for _, f in output):
         raise PackagingError("No Heroes III scenario or campaign files found under Maps.")
     if len({dest.casefold() for _, dest in output}) != len(output):
         raise PackagingError("Case-insensitive filename collision in original data.")
@@ -85,6 +89,14 @@ def package(base_ipa: Path, extracted_dir: Path, result_ipa: Path, mode: str, *,
     if result_ipa.exists():
         raise PackagingError("Output IPA already exists. Choose a new filename to protect your previous build.")
     total_bytes = sum(p.stat().st_size for p, _ in assets)
+    normalized = [dest.casefold() for _, dest in assets]
+    audit = {
+        "edition_archives_present": list(REQUIRED_DATA),
+        "maps_and_campaign_files": sum(x.endswith((".h3m", ".h3c")) for x in normalized),
+        "music_mp3_files": sum(x.startswith((APP + "Mp3/").casefold()) and x.endswith(".mp3") for x in normalized),
+        "sound_archives": sum(x.startswith((APP + "Data/").casefold()) and x.endswith(".snd") for x in normalized),
+        "video_archives": sum(x.startswith((APP + "Data/").casefold()) and x.endswith(".vid") for x in normalized),
+    }
     with zipfile.ZipFile(base_ipa) as source:
         if source.testzip() is not None:
             raise PackagingError("Engine IPA failed ZIP integrity validation.")
@@ -113,7 +125,7 @@ def package(base_ipa: Path, extracted_dir: Path, result_ipa: Path, mode: str, *,
         if any(dest in originals for _, dest in assets):
             raise PackagingError("Duplicate resource paths in app bundle.")
         if dry_run:
-            return {"mode":mode,"game_root":str(game_root),"assets":len(assets),"source_bytes":total_bytes,"display_name":DISPLAY_NAME,"output":str(result_ipa),"dry_run":True}
+            return {"mode":mode,"game_root":str(game_root),"assets":len(assets),"source_bytes":total_bytes,"display_name":DISPLAY_NAME,"output":str(result_ipa),"dry_run":True,"audit":audit}
         result_ipa.parent.mkdir(parents=True, exist_ok=True)
         # Check available space before writing potentially >1 GB of data.
         free = shutil.disk_usage(result_ipa.parent).free
@@ -163,8 +175,25 @@ def package(base_ipa: Path, extracted_dir: Path, result_ipa: Path, mode: str, *,
                 break
             digest_hash.update(chunk)
     digest = digest_hash.hexdigest()
-    manifest = {"mode": mode, "kind":"self-contained unsigned VCMI iOS IPA", "asset_count":len(assets),"asset_source_bytes":total_bytes,"ipa_bytes":result_ipa.stat().st_size, "ipa_sha256":digest,"asset_paths":[x for x in GAME_DIRS if any(dest.startswith(APP+x+"/") for _,dest in assets)],"game_files_publicly_redistributable": False,"signed":False,"requires_data_import_after_install":False,"requires_apple_signing":True,"display_name":DISPLAY_NAME}
+    manifest = {"mode": mode, "kind":"self-contained unsigned VCMI iOS IPA", "asset_count":len(assets),"asset_source_bytes":total_bytes,"ipa_bytes":result_ipa.stat().st_size, "ipa_sha256":digest,"asset_paths":[x for x in GAME_DIRS if any(dest.startswith(APP+x+"/") for _,dest in assets)],"game_files_publicly_redistributable": False,"signed":False,"requires_data_import_after_install":False,"requires_apple_signing":True,"display_name":DISPLAY_NAME,"audit":audit}
     result_ipa.with_suffix(".manifest.json").write_text(json.dumps(manifest, indent=2)+"\n",encoding="utf-8")
+    audit_lines = [
+        "Heroes III Mobile — Private Complete Edition Packaging Audit",
+        "The original game assets remain privately owned. This report does not grant redistribution rights.",
+        f"SHA256: {digest}",
+        f"Total embedded files: {len(assets)}",
+        f"Extracted source bytes: {total_bytes}",
+        f"Map and campaign files: {audit['maps_and_campaign_files']}",
+        f"Music MP3 files: {audit['music_mp3_files']}",
+        f"Sound archives: {audit['sound_archives']}",
+        f"Video archives: {audit['video_archives']}",
+        "Required Complete Edition graphics archives: " + ", ".join(REQUIRED_DATA),
+        "WARNING: Audio/music may be missing." if not audit["sound_archives"] or not audit["music_mp3_files"] else "Sound and music files detected.",
+        "WARNING: Cutscene video may be missing." if not audit["video_archives"] else "Video archive detected.",
+        "UNSIGNED: Sign this IPA before iPhone installation.",
+        "UNTESTED: Physical-device gameplay and complete campaign support still require verification.",
+    ]
+    result_ipa.with_suffix(".audit.txt").write_text("\n".join(audit_lines)+"\n", encoding="utf-8")
     return manifest
 
 
