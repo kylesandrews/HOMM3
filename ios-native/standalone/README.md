@@ -26,7 +26,7 @@ python3 ios-native/standalone/pack_standalone.py \
   --mode personal --rights-confirmed
 ```
 
-The script locates the `Data`, `Maps` and optional `Mp3` directories, validates required LOD data and maps, streams the files directly into `Payload/vcmiclient.app`, preserves all original engine resources, runs ZIP integrity checks, and writes an SHA-256 manifest. It refuses already-signed builds, collisions, installers, and private signing credentials. It does not upload anything.
+The script locates the `Data`, `Maps` and optional `Mp3` directories, validates the four Complete Edition graphics archives (`H3Bitmap.lod`, `H3Sprite.lod`, `H3ab_bmp.lod`, `H3ab_spr.lod`) and maps, streams the files directly into `Payload/vcmiclient.app`, preserves all original engine resources, runs ZIP integrity checks, and writes an SHA-256 manifest plus a readable `.audit.txt` report. It refuses already-signed builds, collisions, installers, and private signing credentials. It does not upload anything.
 
 **Sign after bundling.** IPA modification invalidates existing Apple signatures. Use your Apple Development team/authorized sideloading process to sign the final IPA; distributing a signed app to other people additionally requires appropriate Apple distribution provisioning/TestFlight/App Store eligibility. An unsigned IPA cannot be installed by tapping it.
 
@@ -54,3 +54,9 @@ The iOS source override `ios-native/overrides/clientapp/ios/main.m` now checks t
 If you downloaded the complete Mac kit, double-click `Build Private Heroes III IPA.command`. Its engine IPA is already included, and it will prompt for your GOG `.exe`, verify the matching `-1.bin`, and create the private standalone IPA. The tool requires Python 3 and `innoextract` (installed with Homebrew if available and you approve it).
 
 The current implementation has build and mock-data tests; a real game-data install and physical iPhone gameplay test are still required.
+
+## v1.1 asset-completeness audit
+
+The builder now **rejects an incomplete Complete Edition installation** if either the base graphics archives or Armageddon's Blade graphics archives are missing. It records counts of maps/campaign files, music MP3s, sound archives and video archives in the `.manifest.json` and `.audit.txt` files alongside your private IPA. Missing optional soundtrack or video assets produce warnings rather than hiding the omissions; if you want all Complete Edition media, verify and re-extract the GOG installer pair before signing.
+
+The v1.1 test suite includes 13 offline regression tests, including missing-expansion detection, archive integrity, app name, and no-overwrite behavior. Running them does not test real game playback. The original Complete Edition archives must remain private unless the rights holder authorizes redistribution.
