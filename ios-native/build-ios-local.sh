@@ -32,6 +32,7 @@ git -C "$VCMI_DIR" checkout --detach "$VCMI_REV"
 git -C "$VCMI_DIR" submodule update --init --recursive
 cp "$ROOT/ios-native/overrides/client/adventureMap/AdventureMapWidget.cpp" "$VCMI_DIR/client/adventureMap/AdventureMapWidget.cpp"
 cp "$ROOT/ios-native/overrides/config/widgets/adventureMap.json" "$VCMI_DIR/config/widgets/adventureMap.json"
+cp "$ROOT/ios-native/overrides/clientapp/ios/main.m" "$VCMI_DIR/clientapp/ios/main.m"
 python3 "$ROOT/ios-native/verify_patch.py" "$VCMI_DIR"
 git -C "$VCMI_DIR" diff --check
 
@@ -58,4 +59,4 @@ ditto "$APP" "$STAGE/Payload/vcmiclient.app"
 python3 "$ROOT/ios-native/verify_ipa.py" "$OUT_DIR/vcmi-ios-unsigned.ipa"
 shasum -a 256 "$OUT_DIR/vcmi-ios-unsigned.ipa" > "$OUT_DIR/vcmi-ios-unsigned.sha256"
 echo "Unsigned IPA is ready at: $OUT_DIR/vcmi-ios-unsigned.ipa"
-echo "It requires signing before iPhone installation and original GOG game data after launch."
+echo "It requires signing before iPhone installation and original GOG game data, either bundled locally or imported after launch."
