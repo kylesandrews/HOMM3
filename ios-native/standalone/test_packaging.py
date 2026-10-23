@@ -22,7 +22,7 @@ class TestStandalone(unittest.TestCase):
         (self.game/"Data").mkdir(parents=True)
         (self.game/"Maps").mkdir()
         (self.game/"Mp3").mkdir()
-        for f in ("H3Bitmap.lod","H3Sprite.lod"):
+        for f in ("H3Bitmap.lod","H3Sprite.lod","H3ab_bmp.lod","H3ab_spr.lod","Heroes3.snd","VIDEO.VID"):
             (self.game/"Data"/f).write_bytes(b"fake-data")
         (self.game/"Maps"/"sample.h3m").write_bytes(b"sample map")
         (self.game/"Mp3"/"sample.mp3").write_bytes(b"sample music")
@@ -31,7 +31,11 @@ class TestStandalone(unittest.TestCase):
     def test_finds_nested_game(self):self.assertEqual(resolve_game_root(self.root/"extract"),self.game)
     def test_packages_app_resources(self):
         m=package(self.base,self.root/"extract",self.output,"personal")
-        self.assertEqual(m["asset_count"],4)
+        self.assertEqual(m["asset_count"],8)
+        self.assertEqual(m["audit"]["maps_and_campaign_files"],1)
+        self.assertEqual(m["audit"]["music_mp3_files"],1)
+        self.assertEqual(m["audit"]["sound_archives"],1)
+        self.assertEqual(m["audit"]["video_archives"],1)
         self.assertTrue(self.output.exists())
         with zipfile.ZipFile(self.output) as z:
             self.assertIsNone(z.testzip())
@@ -40,10 +44,28 @@ class TestStandalone(unittest.TestCase):
             self.assertEqual(z.read(APP+"config/settings.json"),b"{}")
             self.assertEqual(plistlib.loads(z.read(APP+"Info.plist"))["CFBundleDisplayName"],"Heroes III Mobile")
         self.assertEqual(json.loads(self.output.with_suffix(".manifest.json").read_text())["ipa_sha256"],hashlib.sha256(self.output.read_bytes()).hexdigest())
+        report=self.output.with_suffix(".audit.txt").read_text()
+        self.assertIn("Complete Edition",report)
+        self.assertIn("Sound and music files detected",report)
     def test_dry_run(self):
         m=package(self.base,self.root/"extract",self.output,"personal",dry_run=True)
         self.assertTrue(m["dry_run"])
         self.assertFalse(self.output.exists())
+    def test_missing_expansion_archive_rejected(self):
+        (self.game/"Data"/"H3ab_spr.lod").unlink()
+        with self.assertRaisesRegex(PackagingError,"Incomplete Heroes III Complete Edition"):
+            package(self.base,self.root/"extract",self.output,"personal")
+
+    def test_missing_optional_media_reported(self):
+        (self.game/"Data"/"Heroes3.snd").unlink()
+        (self.game/"Data"/"VIDEO.VID").unlink()
+        (self.game/"Mp3"/"sample.mp3").unlink()
+        m=package(self.base,self.root/"extract",self.output,"personal")
+        self.assertEqual(m["audit"]["music_mp3_files"],0)
+        report=self.output.with_suffix(".audit.txt").read_text()
+        self.assertIn("WARNING: Audio/music may be missing",report)
+        self.assertIn("WARNING: Cutscene video may be missing",report)
+
     def test_missing_map_rejected(self):
         (self.game/"Maps"/"sample.h3m").unlink()
         with self.assertRaises(PackagingError):package(self.base,self.root/"extract",self.output,"personal")
