@@ -48,6 +48,18 @@ Do not commit the game installer or original assets to a public GitHub repositor
 
 The main branch workflow checks out the engine at a fixed upstream revision, applies the modified source from the `ios-native-port` branch, resolves the official iOS Conan dependency cache, compiles with Xcode, packages an unsigned IPA, validates its contents, and uploads the artifact.
 
+## Intel macOS Monterey compatibility
+
+For **2016 Intel MacBook Pros running macOS 12.7.6**, the private standalone game packager no longer requires Homebrew. It looks for a bundled Intel `tools/innoextract`, an already-installed extractor, or one installed through MacPorts. The developer's original `innoextract` project does not publish official macOS binaries, so builds with a portable extractor require an additional compatibility check.
+
+If no portable extractor is available, download the [official MacPorts 2.12.6 Monterey installer](https://distfiles.macports.org/MacPorts/MacPorts-2.12.6-12-Monterey.pkg), install it, then run:
+
+```bash
+sudo /opt/local/bin/port install innoextract
+```
+
+Reopen `Build Private Heroes III IPA.command` afterward. No Homebrew or modern Xcode is needed on the Mac to combine the already-compiled iPhone engine with locally purchased Complete Edition assets. The resulting IPA still requires Apple signing before installation.
+
 ## Attribution and licensing
 
 VCMI's [GPL v2 license text](VCMI-GPL-2.0-LICENSE.txt) is preserved here. GOG installers, maps, sound packs, and Apple signing credentials are intentionally excluded from build artifacts. Existing tracked proprietary files must be removed separately; adding ignore patterns does not untrack them.
