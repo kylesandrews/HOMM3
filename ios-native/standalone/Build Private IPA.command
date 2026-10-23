@@ -32,22 +32,47 @@ SCRIPT="$BASE/packager/pack_standalone.py"
 [ -f "$SCRIPT" ] || { echo "Missing Python packaging script: $SCRIPT"; exit 1; }
 command -v python3 >/dev/null || { echo "Python 3 is required; install Python 3 and retry."; exit 1; }
 
-if ! command -v innoextract >/dev/null; then
-  echo "The free 'innoextract' utility is required to unpack your GOG installer."
-  if command -v brew >/dev/null; then
-    read -r -p "Install it using Homebrew now? [y/N] " answer
+# Prefer a portable, GPL-compatible / zlib-licensed, Intel macOS extractor
+# shipped with the ZIP. Do not require Homebrew on a Monterey Intel Mac.
+EXTRACTOR=""
+BUNDLED="$BASE/tools/innoextract"
+if [ -x "$BUNDLED" ] && "$BUNDLED" --version >/dev/null 2>&1; then
+  EXTRACTOR="$BUNDLED"
+elif command -v innoextract >/dev/null 2>&1; then
+  EXTRACTOR="$(command -v innoextract)"
+elif [ -x "/opt/local/bin/innoextract" ]; then
+  EXTRACTOR="/opt/local/bin/innoextract"
+fi
+
+if [ -z "$EXTRACTOR" ]; then
+  echo "An Inno Setup extractor is needed to unpack the matching GOG EXE and BIN."
+  echo "Homebrew is NOT required. Your Intel macOS Monterey 12.7.6 supports MacPorts."
+  echo
+  if [ -x "/opt/local/bin/port" ]; then
+    echo "MacPorts is installed, but innoextract is missing."
+    read -r -p "Install it using MacPorts now? This may ask for your Mac login password. [y/N] " answer
     if [[ "$answer" == "y" || "$answer" == "Y" ]]; then
-      brew install innoextract
-    else
-      echo "You can install it later with: brew install innoextract"
-      exit 1
+      sudo /opt/local/bin/port install innoextract
+      EXTRACTOR="/opt/local/bin/innoextract"
     fi
   else
-    echo "Install Homebrew and then run: brew install innoextract"
-    echo "https://brew.sh"
+    echo "MacPorts Monterey installer (official):"
+    echo "https://distfiles.macports.org/MacPorts/MacPorts-2.12.6-12-Monterey.pkg"
+    read -r -p "Open this official Monterey installer page now? [y/N] " answer
+    if [[ "$answer" == "y" || "$answer" == "Y" ]]; then
+      open "https://distfiles.macports.org/MacPorts/MacPorts-2.12.6-12-Monterey.pkg"
+    fi
+    echo "After installing MacPorts, open Terminal and run:"
+    echo "sudo /opt/local/bin/port install innoextract"
+    echo "Then reopen this wizard. Neither MacPorts nor Homebrew is needed if tools/innoextract is bundled."
+  fi
+  if [ -z "$EXTRACTOR" ] || [ ! -x "$EXTRACTOR" ]; then
+    echo "Unable to find the extractor; no game files were changed."
     exit 1
   fi
 fi
+
+echo "Using extractor: $EXTRACTOR"
 
 echo "Choose the GOG Complete Edition setup EXE."
 echo "The matching -1.bin file must be in the SAME folder as the EXE."
@@ -93,7 +118,7 @@ TMP="$(mktemp -d -t heroes-iii-personal)"
 trap 'exit_code=$?; rm -rf "$TMP"; finish "$exit_code"' EXIT
 
 echo "Extracting your privately owned GOG installation..."
-innoextract --gog --extract --output-dir "$TMP" "$GOG_EXE"
+"$EXTRACTOR" --gog --extract --output-dir "$TMP" "$GOG_EXE"
 echo "Validating and packaging your Heroes III Complete installation..."
 python3 "$SCRIPT" --base-ipa "$ENGINE" --game-dir "$TMP" --out "$OUTPUT" --mode personal --rights-confirmed
 
