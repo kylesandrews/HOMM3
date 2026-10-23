@@ -9,7 +9,8 @@ This branch implements an independent, touch-adapted VCMI iOS client for **Heroe
 - iOS-only hit targets of at least 44 logical pixels; keeps original native controls on desktop.
 - **Dedicated 63-pixel control strip:** adventure-map viewport is shortened by the same amount on supported landscape screens so gameplay tiles are not hidden underneath buttons.
 - Responsive dock positioning is checked for six compact-to-tablet landscape viewports.
-- Bundled game files are detected automatically on iOS: when original Data/H3Bitmap.lod and Data/H3Sprite.lod are included and no explicit launch mode is selected, gameplay starts directly instead of showing the installer.\n- Original VCMI engine implements maps, combat, AI, save files and campaigns. The separate SwiftUI prototype does not supply real gameplay.
+- Bundled game files are detected automatically on iOS: when original Data/H3Bitmap.lod and Data/H3Sprite.lod are included and no explicit launch mode is selected, gameplay starts directly instead of showing the installer.
+- Original VCMI engine implements maps, combat, AI, save files and campaigns. The separate SwiftUI prototype does not supply real gameplay.
 
 ## Builds and testing
 
