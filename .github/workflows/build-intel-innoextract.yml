@@ -20,6 +20,20 @@ jobs:
           curl -fsSL --retry 3 -o innoextract-1.9.tar.gz https://constexpr.org/innoextract/files/innoextract-1.9.tar.gz
           echo "6344a69fc1ed847d4ed3e272e0da5998948c6b828cb7af39c6321aba6cf88126  innoextract-1.9.tar.gz" | shasum -a 256 -c -
           tar xzf innoextract-1.9.tar.gz
+          # innoextract v1.9 calls cmake -P to generate version/man-page files.
+          # Those subprocesses do not inherit CMAKE_POLICY_VERSION_MINIMUM and
+          # fail with CMake 4's removal of compatibility before 3.5.
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          files = list(Path("innoextract-1.9/cmake").rglob("*.cmake"))
+          for p in files:
+              old = p.read_text()
+              new = re.sub(r"cmake_minimum_required\\(VERSION\\s+[0-9.]+(?:\\.\\.\\.[0-9.]+)?\\)", "cmake_minimum_required(VERSION 3.5)", old)
+              if new != old:
+                  p.write_text(new)
+                  print("Updated old CMake policy minimum:",p)
+          PY
       - name: Configure macOS 12 x86_64 compatible standalone extractor
         run: |
           cmake -S innoextract-1.9 -B innoextract-1.9/build \
