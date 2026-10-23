@@ -43,7 +43,7 @@ jobs:
           original = "#include <boost/filesystem/operations.hpp>"
           assert text.count(original) == 1
           path.write_text(text.replace(original,
-              original + "\\n#include <boost/filesystem/directory.hpp>"))
+              original + chr(10) + "#include <boost/filesystem/directory.hpp>"))
           PY
       - name: Configure macOS 12 x86_64 compatible standalone extractor
         run: |
