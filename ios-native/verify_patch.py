@@ -9,6 +9,12 @@ from pathlib import Path
 root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("vcmi-src")
 cpp = (root / "client/adventureMap/AdventureMapWidget.cpp").read_text()
 layout = (root / "config/widgets/adventureMap.json").read_text()
+ios_main = (root / "clientapp/ios/main.m").read_text()
+assert "h3MobileHasBundledGameData()" in ios_main
+assert '[NSUserDefaults.standardUserDefaults objectForKey:@"LaunchType"]' in ios_main
+assert 'caseInsensitiveCompare:@"H3Bitmap.lod"' in ios_main
+assert 'caseInsensitiveCompare:@"H3Sprite.lod"' in ios_main
+assert "launchType = savedMode != nil" in ios_main
 assert "#ifndef VCMI_IOS" in cpp
 assert 'input["exists"]["iosOnly"].Bool()' in cpp
 assert 'input["mobileTouchTarget"].Bool()' in cpp
