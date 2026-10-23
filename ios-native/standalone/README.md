@@ -46,3 +46,11 @@ bash ios-native/standalone/build_personal_ipa.sh \
 ```
 
 This extracts the GOG game files into a temporary private folder, embeds them in the IPA, and removes the temporary extraction after packaging. It never uploads the original assets. The result must still be signed for iPhone installation and cannot be publicly redistributed without relevant rights-holder permission.
+
+## v0.9: direct launch for self-contained builds
+
+The iOS source override `ios-native/overrides/clientapp/ios/main.m` now checks the application bundle's `Data` directory for the original `H3Bitmap.lod` and `H3Sprite.lod` archives, case-insensitively. When both exist and the user hasn't explicitly selected a launch mode, the app launches gameplay directly; when they're absent, the normal VCMI import launcher appears. The explicit app setting and `VCMI_LAUNCH_TYPE` environment override take precedence. This still requires compiling the v0.9 engine: adding files to an earlier v0.8 IPA alone will not enable auto-launch.
+
+If you downloaded the complete Mac kit, double-click `Build Private Heroes III IPA.command`. Its engine IPA is already included, and it will prompt for your GOG `.exe`, verify the matching `-1.bin`, and create the private standalone IPA. The tool requires Python 3 and `innoextract` (installed with Homebrew if available and you approve it).
+
+The current implementation has build and mock-data tests; a real game-data install and physical iPhone gameplay test are still required.
