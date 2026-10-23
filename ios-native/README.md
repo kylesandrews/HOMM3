@@ -9,13 +9,13 @@ This branch implements an independent, touch-adapted VCMI iOS client for **Heroe
 - iOS-only hit targets of at least 44 logical pixels; keeps original native controls on desktop.
 - **Dedicated 63-pixel control strip:** adventure-map viewport is shortened by the same amount on supported landscape screens so gameplay tiles are not hidden underneath buttons.
 - Responsive dock positioning is checked for six compact-to-tablet landscape viewports.
-- Original VCMI engine implements maps, combat, AI, save files and campaigns. The separate SwiftUI prototype does not supply real gameplay.
+- Bundled game files are detected automatically on iOS: when original Data/H3Bitmap.lod and Data/H3Sprite.lod are included and no explicit launch mode is selected, gameplay starts directly instead of showing the installer.\n- Original VCMI engine implements maps, combat, AI, save files and campaigns. The separate SwiftUI prototype does not supply real gameplay.
 
 ## Builds and testing
 
 [Native macOS build workflow](https://github.com/kylesandrews/HOMM3/actions/workflows/heroes-mobile-native-ios.yml) runs from the repository main branch, checks out this source branch, restores official VCMI iOS dependencies, compiles for iPhoneOS ARM64, packages an unsigned IPA and tests the bundled launcher, resources and button layout.
 
-[Build #3](https://github.com/kylesandrews/HOMM3/actions/runs/39826486075) successfully compiled and packaged the earlier native layout. The reserved control-strip change above is pending its own successful native compilation and on-device testing.
+[Native build #7 (v0.9)](https://github.com/kylesandrews/HOMM3/actions/runs/39875596004) compiled and packaged successfully with the reserved control strip and bundled-data auto-launch code. Actual device gameplay, original GOG game data and Apple signing have not yet been validated.
 
 For actual use:
 - [iPhone installation / game data import](INSTALL_IPHONE.md)
