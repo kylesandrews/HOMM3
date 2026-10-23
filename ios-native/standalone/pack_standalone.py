@@ -18,7 +18,8 @@ import zipfile
 
 APP = "Payload/vcmiclient.app/"
 GAME_DIRS = ("Data", "Maps", "Mp3")
-REQUIRED_DATA = ("h3bitmap.lod", "h3sprite.lod", "h3ab_bmp.lod", "h3ab_spr.lod")
+CORE_DATA = ("h3bitmap.lod", "h3sprite.lod")
+REQUIRED_DATA = CORE_DATA + ("h3ab_bmp.lod", "h3ab_spr.lod")
 DISPLAY_NAME = "Heroes III Mobile"
 
 class PackagingError(Exception):
@@ -36,7 +37,7 @@ def resolve_game_root(root: Path) -> Path:
         data, maps = folders.get("data"), folders.get("maps")
         if data and maps:
             files = {p.name.casefold() for p in data.iterdir() if p.is_file()}
-            if all(x in files for x in REQUIRED_DATA):
+            if all(x in files for x in CORE_DATA):
                 return base
         if depth < 4:
             for child in base.iterdir():
