@@ -22,6 +22,14 @@ The custom adventure-map toolbar includes **Kingdom, Quest Log, Move Hero, Cast 
 
 The repo includes a [one-click Mac build wizard](https://github.com/kylesandrews/HOMM3/blob/ios-native-port/ios-native/standalone/Build%20Private%20IPA.command) for private, locally supplied game data. The self-contained app must be signed before installing.
 
+## Private one-click Mac packaging kit v1.0
+
+The latest Mac toolkit includes the **verified v0.9 ARM64 iOS engine** and a Finder-openable packaging wizard. It validates your matching GOG Complete Edition installer pair and available disk space, extracts those files privately on your Mac, and packages a single **unsigned** IPA. The output is branded "Heroes III Mobile" and is designed to launch the packaged game directly without a second game-file import.
+
+The packager refuses to overwrite previous builds, checks that its input contains the expected customized iPhoneOS executable, and verifies embedded game files. [All 11 packager regression tests passed](https://github.com/kylesandrews/HOMM3/actions/runs/39887680524).
+
+**Important:** The published toolkit includes NO original GOG game content. An asset-inclusive IPA may only be used or shared as authorized by its game-content rights. It still requires Apple signing, and its full gameplay behavior has not been validated on physical iPhone hardware.
+
 ## Private self-contained build (no game-file import required)
 
 The [standalone IPA packager](https://github.com/kylesandrews/HOMM3/blob/ios-native-port/ios-native/standalone/README.md) is on the [ios-native-port branch](https://github.com/kylesandrews/HOMM3/tree/ios-native-port/ios-native/standalone). Download the unsigned engine build, extract your own GOG Complete Edition `.exe` and matching `.bin` locally, then embed the resulting `Data`, `Maps` and optional `Mp3` in one **unsigned** IPA using the offline packager. Sign the completed IPA before installation. No post-install import is necessary because VCMI searches the app bundle root for game files.
