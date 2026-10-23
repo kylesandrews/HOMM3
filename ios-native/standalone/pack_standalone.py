@@ -8,6 +8,8 @@ import argparse
 import hashlib
 import json
 import os
+import plistlib
+import struct
 from pathlib import Path
 import shutil
 import sys
@@ -17,6 +19,7 @@ import zipfile
 APP = "Payload/vcmiclient.app/"
 GAME_DIRS = ("Data", "Maps", "Mp3")
 REQUIRED_DATA = ("h3bitmap.lod", "h3sprite.lod")
+DISPLAY_NAME = "Heroes III Mobile"
 
 class PackagingError(Exception):
     pass
@@ -79,6 +82,8 @@ def package(base_ipa: Path, extracted_dir: Path, result_ipa: Path, mode: str, *,
         raise PackagingError("Input and output IPA must be different paths.")
     if not base_ipa.exists():
         raise PackagingError("Engine-only base IPA is missing.")
+    if result_ipa.exists():
+        raise PackagingError("Output IPA already exists. Choose a new filename to protect your previous build.")
     total_bytes = sum(p.stat().st_size for p, _ in assets)
     with zipfile.ZipFile(base_ipa) as source:
         if source.testzip() is not None:
@@ -86,6 +91,21 @@ def package(base_ipa: Path, extracted_dir: Path, result_ipa: Path, mode: str, *,
         originals = set(source.namelist())
         if APP + "Info.plist" not in originals or APP + "vcmiclient" not in originals:
             raise PackagingError("Not a valid VCMI iPhone IPA.")
+        info = plistlib.loads(source.read(APP + "Info.plist"))
+        if info.get("CFBundleSupportedPlatforms") != ["iPhoneOS"] or info.get("CFBundleExecutable") != "vcmiclient":
+            raise PackagingError("Base IPA is not the expected iPhoneOS VCMI client.")
+        with source.open(APP + "vcmiclient") as binary:
+            header = binary.read(16)
+        if len(header) != 16 or struct.unpack("<IIII", header)[:2] != (0xfeedfacf, 0x0100000c):
+            raise PackagingError("Base IPA does not contain an ARM64 iOS executable.")
+        if APP + "config/widgets/adventureMap.json" not in originals:
+            raise PackagingError("This IPA is missing the VCMI adventure-map configuration.")
+        if "iosQuickActions" not in source.read(APP + "config/widgets/adventureMap.json").decode("utf-8"):
+            raise PackagingError("Base IPA is not a Heroes III Mobile customized engine build.")
+        info["CFBundleDisplayName"] = DISPLAY_NAME
+        original_plist = source.read(APP + "Info.plist")
+        plist_fmt = plistlib.FMT_BINARY if original_plist.startswith(b"bplist") else plistlib.FMT_XML
+        branded_plist = plistlib.dumps(info, fmt=plist_fmt, sort_keys=False)
         if any("/_CodeSignature/" in n for n in originals):
             raise PackagingError("The input app is already signed. Add game files to an unsigned IPA, then sign the complete result.")
         if any(n.startswith(APP + directory + "/") for n in originals for directory in GAME_DIRS):
@@ -93,16 +113,24 @@ def package(base_ipa: Path, extracted_dir: Path, result_ipa: Path, mode: str, *,
         if any(dest in originals for _, dest in assets):
             raise PackagingError("Duplicate resource paths in app bundle.")
         if dry_run:
-            return {"mode":mode,"game_root":str(game_root),"assets":len(assets),"source_bytes":total_bytes,"output":str(result_ipa),"dry_run":True}
+            return {"mode":mode,"game_root":str(game_root),"assets":len(assets),"source_bytes":total_bytes,"display_name":DISPLAY_NAME,"output":str(result_ipa),"dry_run":True}
         result_ipa.parent.mkdir(parents=True, exist_ok=True)
+        # Check available space before writing potentially >1 GB of data.
+        free = shutil.disk_usage(result_ipa.parent).free
+        conservative = total_bytes + base_ipa.stat().st_size + 64 * 1024 * 1024
+        if free < conservative:
+            raise PackagingError(f"Not enough free disk space: need approximately {conservative / 2**30:.2f} GiB on the output volume (available {free / 2**30:.2f} GiB).")
         fd, name = tempfile.mkstemp(prefix="._vcmi_private_", suffix=".ipa", dir=result_ipa.parent)
         os.close(fd)
         tmp = Path(name)
         try:
             with zipfile.ZipFile(tmp, "w", allowZip64=True) as target:
-                for info in source.infolist():
-                    with source.open(info) as reader, target.open(info, "w", force_zip64=True) as writer:
-                        shutil.copyfileobj(reader, writer, length=1024 * 1024)
+                for item in source.infolist():
+                    if item.filename == APP + "Info.plist":
+                        target.writestr(item, branded_plist)
+                    else:
+                        with source.open(item) as reader, target.open(item, "w", force_zip64=True) as writer:
+                            shutil.copyfileobj(reader, writer, length=1024 * 1024)
                 for disk, dest in assets:
                     arcinfo = zipfile.ZipInfo(dest)
                     arcinfo.compress_type = zipfile.ZIP_DEFLATED
@@ -116,6 +144,13 @@ def package(base_ipa: Path, extracted_dir: Path, result_ipa: Path, mode: str, *,
                 names = set(check.namelist())
                 if not all(dest in names for _, dest in assets):
                     raise PackagingError("Not all game assets were embedded.")
+                result_info = plistlib.loads(check.read(APP + "Info.plist"))
+                if result_info.get("CFBundleDisplayName") != DISPLAY_NAME:
+                    raise PackagingError("The branded iPhone app display name is missing.")
+                if not all(APP + "Data/" + f in names or
+                           any(n.casefold() == (APP + "Data/" + f).casefold() for n in names)
+                           for f in REQUIRED_DATA):
+                    raise PackagingError("Required GOG data archives missing from finished IPA.")
             os.replace(tmp, result_ipa)
         finally:
             if tmp.exists():
@@ -128,7 +163,7 @@ def package(base_ipa: Path, extracted_dir: Path, result_ipa: Path, mode: str, *,
                 break
             digest_hash.update(chunk)
     digest = digest_hash.hexdigest()
-    manifest = {"mode": mode, "kind":"self-contained unsigned VCMI iOS IPA", "asset_count":len(assets),"asset_source_bytes":total_bytes,"ipa_bytes":result_ipa.stat().st_size, "ipa_sha256":digest,"asset_paths":[x for x in GAME_DIRS if any(dest.startswith(APP+x+"/") for _,dest in assets)],"game_files_publicly_redistributable": False,"signed":False,"requires_data_import_after_install":False,"requires_apple_signing":True}
+    manifest = {"mode": mode, "kind":"self-contained unsigned VCMI iOS IPA", "asset_count":len(assets),"asset_source_bytes":total_bytes,"ipa_bytes":result_ipa.stat().st_size, "ipa_sha256":digest,"asset_paths":[x for x in GAME_DIRS if any(dest.startswith(APP+x+"/") for _,dest in assets)],"game_files_publicly_redistributable": False,"signed":False,"requires_data_import_after_install":False,"requires_apple_signing":True,"display_name":DISPLAY_NAME}
     result_ipa.with_suffix(".manifest.json").write_text(json.dumps(manifest, indent=2)+"\n",encoding="utf-8")
     return manifest
 
