@@ -2,7 +2,7 @@
 
 This repository is developing a **touch-optimized iOS build of [VCMI](https://github.com/vcmi/vcmi)** for legally obtained **Heroes of Might and Magic III: Complete Edition** data (Restoration of Erathia, Armageddon's Blade, Shadow of Death).
 
-**Development status:** Native VCMI compiled successfully for iPhoneOS ARM64 on GitHub Actions. An unsigned `.app` and IPA have been produced. **On-device gameplay, Apple signing, and imported GOG assets are not yet verified.**
+**Development status:** The iOS v0.9 engine compiled and packaged successfully with conditional bundled-game auto-launch. Its Apple signing, real GOG assets, and physical-device gameplay are not yet verified.
 
 ## Download the unsigned test build
 
@@ -15,6 +15,12 @@ This repository is developing a **touch-optimized iOS build of [VCMI](https://gi
 - [Upstream iOS build instructions](https://github.com/vcmi/vcmi/blob/develop/docs/developers/Building_iOS.md)
 
 The custom adventure-map toolbar includes **Kingdom, Quest Log, Move Hero, Cast Spell, Next Hero, End Turn**, uses VCMI's original game commands, and targets smaller landscape iPhones as well as larger screens. The iOS map viewport is shortened to reserve a separate control strip, so gameplay tiles are not obscured.
+
+## Verified v0.9 native engine
+
+[Heroes III Mobile v0.9 GitHub build #7](https://github.com/kylesandrews/HOMM3/actions/runs/39875596004) **succeeded** for iPhoneOS ARM64, including native Xcode compilation, IPA packaging and validation. The app detects `Data/H3Bitmap.lod` and `Data/H3Sprite.lod` bundled inside the IPA and auto-launches gameplay by default when no user launch preference exists. Engine-only builds still show the VCMI launcher. **The game-data-inclusive build is not publicly available**, because original Heroes III Complete resources require separate distribution rights.
+
+The repo includes a [one-click Mac build wizard](https://github.com/kylesandrews/HOMM3/blob/ios-native-port/ios-native/standalone/Build%20Private%20IPA.command) for private, locally supplied game data. The self-contained app must be signed before installing.
 
 ## Private self-contained build (no game-file import required)
 
