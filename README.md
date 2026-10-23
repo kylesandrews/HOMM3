@@ -22,11 +22,11 @@ The custom adventure-map toolbar includes **Kingdom, Quest Log, Move Hero, Cast 
 
 The repo includes a [one-click Mac build wizard](https://github.com/kylesandrews/HOMM3/blob/ios-native-port/ios-native/standalone/Build%20Private%20IPA.command) for private, locally supplied game data. The self-contained app must be signed before installing.
 
-## Private one-click Mac packaging kit v1.0
+## Private one-click Mac packaging kit v1.1
 
 The latest Mac toolkit includes the **verified v0.9 ARM64 iOS engine** and a Finder-openable packaging wizard. It validates your matching GOG Complete Edition installer pair and available disk space, extracts those files privately on your Mac, and packages a single **unsigned** IPA. The output is branded "Heroes III Mobile" and is designed to launch the packaged game directly without a second game-file import.
 
-The packager refuses to overwrite previous builds, checks that its input contains the expected customized iPhoneOS executable, and verifies embedded game files. [All 11 packager regression tests passed](https://github.com/kylesandrews/HOMM3/actions/runs/39887680524).
+The packager refuses to overwrite previous builds, confirms the customized iPhoneOS ARM64 executable, validates four Complete Edition base-and-expansion archives, and emits a separate audio/video completeness audit. [All 13 packaging regression tests passed](https://github.com/kylesandrews/HOMM3/actions/runs/39909826129).
 
 **Important:** The published toolkit includes NO original GOG game content. An asset-inclusive IPA may only be used or shared as authorized by its game-content rights. It still requires Apple signing, and its full gameplay behavior has not been validated on physical iPhone hardware.
 
