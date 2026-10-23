@@ -100,5 +100,14 @@ python3 "$SCRIPT" --base-ipa "$ENGINE" --game-dir "$TMP" --out "$OUTPUT" --mode 
 echo
 echo "Private unsigned IPA saved to: $OUTPUT"
 echo "A checksum manifest was saved next to it."
+AUDIT_REPORT="${OUTPUT%.ipa}.audit.txt"
+if [ -f "$AUDIT_REPORT" ]; then
+  echo
+  echo "COMPLETE EDITION ASSET AUDIT"
+  cat "$AUDIT_REPORT"
+  echo "Audit report: $AUDIT_REPORT"
+else
+  echo "WARNING: Expected audit report was not generated."
+fi
 echo "Before installing, sign the IPA with your Apple development identity or a trusted sideloading tool."
 open -R "$OUTPUT" || true
