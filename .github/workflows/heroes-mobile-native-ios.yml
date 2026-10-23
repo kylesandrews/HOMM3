@@ -27,11 +27,12 @@ jobs:
           git -C vcmi-src checkout --detach '${{ inputs.vcmi_revision || 'bae8bafd2ec3bbf7ec2cacea5c6868ed3b019405' }}'
           cp ios-native/overrides/client/adventureMap/AdventureMapWidget.cpp vcmi-src/client/adventureMap/AdventureMapWidget.cpp
           cp ios-native/overrides/config/widgets/adventureMap.json vcmi-src/config/widgets/adventureMap.json
+          cp ios-native/overrides/clientapp/ios/main.m vcmi-src/clientapp/ios/main.m
           python3 ios-native/verify_patch.py vcmi-src
           git -C vcmi-src diff --check
           echo "VCMI native iOS customization validated"
-          echo "## Heroes III Mobile v0.8: non-overlapping adventure dock" >> "$GITHUB_STEP_SUMMARY"
-          echo "Validated dock geometry, iOS-only map viewport reservation, and all six native controls." >> "$GITHUB_STEP_SUMMARY"
+          echo "## Heroes III Mobile v0.9: bundled-data auto-launch and touch dock" >> "$GITHUB_STEP_SUMMARY"
+          echo "Validated dock geometry, iOS-only map viewport reservation, six native controls, and conditional bundled-game autostart." >> "$GITHUB_STEP_SUMMARY"
   build-native-ios:
     needs: validate
     runs-on: macos-15
@@ -54,6 +55,7 @@ jobs:
         run: |
           cp ios-native/overrides/client/adventureMap/AdventureMapWidget.cpp vcmi-src/client/adventureMap/AdventureMapWidget.cpp
           cp ios-native/overrides/config/widgets/adventureMap.json vcmi-src/config/widgets/adventureMap.json
+          cp ios-native/overrides/clientapp/ios/main.m vcmi-src/clientapp/ios/main.m
           python3 ios-native/verify_patch.py vcmi-src
           git -C vcmi-src diff --check
           git -C vcmi-src diff > native-ios-customizations.diff
