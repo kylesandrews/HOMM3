@@ -21,7 +21,11 @@ jobs:
         run: bash -n ios-native/standalone/prepare_gog.sh ios-native/standalone/build_personal_ipa.sh "ios-native/standalone/Build Private IPA.command"
       - name: Offline packaging test suite
         working-directory: ios-native/standalone
-        run: python3 -m unittest -v test_packaging.py
+        run: |
+          python3 -m unittest -v test_packaging.py
+          echo "### Heroes III Mobile private packager v1.0" >> "$GITHUB_STEP_SUMMARY"
+          echo "Tests: 11 automated checks (mock game assets only); no copyrighted data uploaded." >> "$GITHUB_STEP_SUMMARY"
+          echo "Input validation includes native ARM64 iPhoneOS bundle, game resources, previous-build overwrite protection and display name." >> "$GITHUB_STEP_SUMMARY"
       - name: Assert no original assets included
         run: |
           ! find ios-native/standalone -type f \( -iname '*.lod' -o -iname '*.h3m' -o -iname '*.h3c' -o -iname '*.bin' -o -iname '*.exe' \) | grep .
