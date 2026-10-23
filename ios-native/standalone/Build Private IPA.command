@@ -5,7 +5,7 @@ set -euo pipefail
 BASE="$(cd "$(dirname "$0")" && pwd)"
 EXIT_STATUS=0
 function finish {
-  EXIT_STATUS=$?
+  EXIT_STATUS="${1:-$?}"
   echo
   if [ "$EXIT_STATUS" -eq 0 ]; then
     echo "Completed. The IPA can be signed with AltStore or an Apple development certificate."
@@ -62,7 +62,7 @@ case "$OUTPUT" in *.ipa) : ;; *) OUTPUT="${OUTPUT}.ipa" ;; esac
 [ "$OUTPUT" != "$ENGINE" ] || { echo "Output must not overwrite the engine IPA."; exit 1; }
 mkdir -p "$(dirname "$OUTPUT")"
 TMP="$(mktemp -d -t heroes-iii-personal)"
-trap 'rm -rf "$TMP"; finish' EXIT
+trap 'exit_code=$?; rm -rf "$TMP"; finish "$exit_code"' EXIT
 
 echo "Extracting your privately owned GOG installation..."
 innoextract --gog --extract --output-dir "$TMP" "$GOG_EXE"
