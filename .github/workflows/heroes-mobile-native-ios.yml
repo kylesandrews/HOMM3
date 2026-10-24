@@ -68,6 +68,9 @@ jobs:
           rm dependencies-ios.txz
       - name: Generate Heroes III iOS Home Screen icon
         run: |
+          # Ensure the current dark-blue logo artwork, rather than an earlier
+          # white-background draft, is the source of the native asset catalog.
+          grep -q 'stroke="#287caf"' ios-native/app-icon/heroes-iii-icon.svg
           bash ios-native/app-icon/apply_icon.sh vcmi-src
           test -f vcmi-src/clientapp/ios/Images.xcassets/AppIcon.appiconset/Icon-App-1024.png
       - name: Resolve iOS dependencies
