@@ -61,8 +61,8 @@ def patch(root: Path, notices_path: Path):
     assert after in cmake, "Unknown iOS resource registration"
     hook = '\tset(CMAKE_EXE_LINKER_FLAGS "-Wl,-e,_client_main")\nendif()'
     prefix = '''\t# The app is based on the VCMI engine. Preserve upstream copyright and license.
-\ttarget_sources(vcmiclient PRIVATE "\${CMAKE_SOURCE_DIR}/license.txt")
-\tset_source_files_properties("\${CMAKE_SOURCE_DIR}/license.txt" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+\ttarget_sources(vcmiclient PRIVATE "${CMAKE_SOURCE_DIR}/license.txt")
+\tset_source_files_properties("${CMAKE_SOURCE_DIR}/license.txt" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
 '''
     if prefix not in cmake:
