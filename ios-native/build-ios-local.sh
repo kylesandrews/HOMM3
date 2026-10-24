@@ -33,6 +33,7 @@ git -C "$VCMI_DIR" submodule update --init --recursive
 cp "$ROOT/ios-native/overrides/client/adventureMap/AdventureMapWidget.cpp" "$VCMI_DIR/client/adventureMap/AdventureMapWidget.cpp"
 cp "$ROOT/ios-native/overrides/config/widgets/adventureMap.json" "$VCMI_DIR/config/widgets/adventureMap.json"
 cp "$ROOT/ios-native/overrides/clientapp/ios/main.m" "$VCMI_DIR/clientapp/ios/main.m"
+python3 "$ROOT/ios-native/branding/apply_branding.py" "$VCMI_DIR"
 python3 "$ROOT/ios-native/verify_patch.py" "$VCMI_DIR"
 git -C "$VCMI_DIR" diff --check
 
