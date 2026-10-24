@@ -157,6 +157,17 @@ std::shared_ptr<CIntObject> AdventureMapWidget::buildMapImage(const JsonNode & i
 std::shared_ptr<CIntObject> AdventureMapWidget::buildMapButton(const JsonNode & input)
 {
 	auto position = readTargetArea(input["area"]);
+#ifdef VCMI_IOS
+	// Keep the complete six-action group centered in the available map strip,
+	// rather than pinning all icons against the town/hero sidebar. All click
+	// targets move together, preserving the tested touch hit rectangles.
+	if (input["mobileCenterInStrip"].Bool() && !subwidgetSizes.empty())
+	{
+		constexpr int mobileActionGroupWidth = 360;
+		const int extraWidth = std::max(0, subwidgetSizes.back().w - mobileActionGroupWidth);
+		position.x -= extraWidth / 2;
+	}
+#endif
 	auto image = AnimationPath::fromJson(input["image"]);
 	auto help = readHintText(input["help"]);
 	bool playerColored = input["playerColored"].Bool();
