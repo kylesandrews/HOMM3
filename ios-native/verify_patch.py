@@ -10,6 +10,19 @@ root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("vcmi-src")
 cpp = (root / "client/adventureMap/AdventureMapWidget.cpp").read_text()
 layout = (root / "config/widgets/adventureMap.json").read_text()
 ios_main = (root / "clientapp/ios/main.m").read_text()
+# Brand the startup without stripping copyright/license notices.
+storyboard = (root / "clientapp/ios/LaunchScreen.storyboard").read_text()
+info_plist = (root / "clientapp/ios/Info.plist").read_text()
+app_cmake = (root / "clientapp/CMakeLists.txt").read_text()
+notices = (root / "clientapp/ios/THIRD_PARTY_NOTICES.txt").read_text()
+assert "vcmi_logo.png" not in storyboard
+assert "<string>Heroes III Mobile</string>" in info_plist
+assert "THIRD_PARTY_NOTICES.txt" in app_cmake
+assert "vcmi_logo.png)" not in app_cmake
+assert 'license.txt' in app_cmake
+assert "GNU General Public License" in notices
+assert (root / "license.txt").is_file()
+
 assert "h3MobileHasBundledGameData()" in ios_main
 assert '[NSUserDefaults.standardUserDefaults objectForKey:@"LaunchType"]' in ios_main
 assert 'caseInsensitiveCompare:@"H3Bitmap.lod"' in ios_main
