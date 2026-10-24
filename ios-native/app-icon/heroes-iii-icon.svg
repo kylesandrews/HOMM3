@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs>
+ <linearGradient id="navy" x2="1" y2="1"><stop stop-color="#061b35"/><stop offset=".43" stop-color="#003969"/><stop offset=".76" stop-color="#071d3c"/><stop offset="1" stop-color="#050915"/></linearGradient>
+ <linearGradient id="gold" x2=".25" y2="1"><stop stop-color="#fff0a3"/><stop offset=".22" stop-color="#c78a24"/><stop offset=".51" stop-color="#fff2b1"/><stop offset=".76" stop-color="#9b5b0f"/><stop offset="1" stop-color="#f0cb66"/></linearGradient>
+ <linearGradient id="steel" x2=".2" y2="1"><stop stop-color="#fffde9"/><stop offset=".26" stop-color="#c8c4bb"/><stop offset=".47" stop-color="#f5ecca"/><stop offset=".66" stop-color="#656f82"/><stop offset=".85" stop-color="#d4d9da"/><stop offset="1" stop-color="#3d4764"/></linearGradient>
+ <filter id="shadow" x="-20%" y="-20%" width="150%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="9"/><feOffset dx="8" dy="11"/><feComponentTransfer><feFuncA type="linear" slope=".9"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="marble"><feTurbulence type="fractalNoise" baseFrequency=".02" numOctaves="3" seed="8"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".08"/></feComponentTransfer></filter>
+</defs>
+<rect width="1024" height="1024" fill="#030817"/>
+<rect x="20" y="20" width="984" height="984" rx="112" fill="url(#gold)"/>
+<rect x="37" y="37" width="950" height="950" rx="99" fill="#050b16"/>
+<rect x="50" y="50" width="924" height="924" rx="91" fill="url(#navy)"/>
+<rect x="50" y="50" width="924" height="924" rx="91" filter="url(#marble)" fill="#eee"/>
+<g fill="url(#steel)" stroke="#ad782d" stroke-width="9" paint-order="stroke" filter="url(#shadow)" text-anchor="middle" font-family="Georgia,Times New Roman,serif" font-weight="bold">
+  <text x="512" y="842" font-size="830" letter-spacing="-58">III</text>
+</g>
+<g font-family="Georgia,Times New Roman,serif" font-weight="bold" text-anchor="middle" filter="url(#shadow)">
+ <text x="512" y="550" fill="#0c090c" stroke="#44290c" stroke-width="27" font-size="198" textLength="855" lengthAdjust="spacingAndGlyphs">HEROES</text>
+ <text x="512" y="541" fill="url(#gold)" stroke="#5e370b" stroke-width="8" paint-order="stroke" font-size="198" textLength="855" lengthAdjust="spacingAndGlyphs">HEROES</text>
+ <text x="512" y="605" font-size="50" fill="#ede8d7" stroke="#544f43" stroke-width="3" paint-order="stroke" textLength="680" lengthAdjust="spacingAndGlyphs">OF MIGHT AND MAGIC</text>
+</g>
+<rect x="52" y="52" width="920" height="920" rx="88" fill="none" stroke="#e8bb58" stroke-width="6" opacity=".8"/>
+</svg>
