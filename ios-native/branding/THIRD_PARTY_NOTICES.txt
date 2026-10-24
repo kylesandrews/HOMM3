@@ -1,0 +1,21 @@
+Heroes III Mobile — Third-Party Notices
+
+This unofficial iOS port is built using the VCMI open-source game engine.
+VCMI engine code copyright belongs to its original contributors and the
+VCMI development team. Original source: https://github.com/vcmi/vcmi
+Modified port source: https://github.com/kylesandrews/HOMM3
+
+VCMI engine source code is licensed under the GNU General Public License,
+version 2 or later. A copy of the full upstream GPL license appears as
+license.txt in this application's resources. Other included third-party
+libraries, dependencies, and VCMI-created project artwork remain subject
+to their respective license and attribution terms.
+
+The proprietary Heroes of Might and Magic III game data is separate from
+this open-source engine. Heroes III and related marks belong to their
+respective rights holders. This is an unofficial independent project.
+An individual's GOG purchase does not grant redistribution rights over
+the original game files.
+
+These legal acknowledgments are retained in the app's supporting files
+rather than shown on the normal loading screen.
