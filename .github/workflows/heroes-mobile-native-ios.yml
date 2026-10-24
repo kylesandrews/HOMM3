@@ -31,7 +31,7 @@ jobs:
           python3 ios-native/verify_patch.py vcmi-src
           git -C vcmi-src diff --check
           echo "VCMI native iOS customization validated"
-          echo "## Heroes III Mobile v1.0: centered, aligned six-action touch dock" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Heroes III Mobile v1.1: centered controls and classic icon" >> "$GITHUB_STEP_SUMMARY"
           echo "Validated centered dock geometry, iOS-only map viewport reservation, original six native controls, and conditional bundled-game autostart." >> "$GITHUB_STEP_SUMMARY"
   build-native-ios:
     needs: validate
@@ -44,7 +44,7 @@ jobs:
       - name: Install Xcode build prerequisites
         run: |
           xcodebuild -version
-          brew install cmake conan
+          brew install cmake conan librsvg
           conan --version
       - name: Clone VCMI and pinned submodules
         run: |
@@ -66,6 +66,10 @@ jobs:
             https://github.com/vcmi/vcmi-dependencies/releases/download/2026-10-13/dependencies-ios.txz
           conan cache restore dependencies-ios.txz
           rm dependencies-ios.txz
+      - name: Generate Heroes III iOS Home Screen icon
+        run: |
+          bash ios-native/app-icon/apply_icon.sh vcmi-src
+          test -f vcmi-src/clientapp/ios/Images.xcassets/AppIcon.appiconset/Icon-App-1024.png
       - name: Resolve iOS dependencies
         working-directory: vcmi-src
         run: |
