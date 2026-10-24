@@ -41,10 +41,15 @@ def check(ipa_path: Path):
             "config/widgets/adventureMap.json",
             "Mods/vcmi/mod.json",
             "LaunchScreen.storyboardc/Info.plist",
+            "Assets.car",
         ]
         for relative in required_resources:
             if app + relative not in names:
                 raise ValueError(f"Missing required runtime resource: {relative}")
+        # iPhone and iPad Home Screen icons are compiled from our AppIcon set.
+        icons = info.get("CFBundleIcons", {}).get("CFBundlePrimaryIcon", {})
+        if icons.get("CFBundleIconName") != "AppIcon":
+            raise ValueError("Missing compiled iOS AppIcon metadata")
         # Confirm the actual IPA contains our *modified* adventure-map layout,
         # not just an executable compiled from modified source.
         layout_text = z.read(app + "config/widgets/adventureMap.json").decode("utf-8")
