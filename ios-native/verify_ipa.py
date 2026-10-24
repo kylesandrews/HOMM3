@@ -42,10 +42,24 @@ def check(ipa_path: Path):
             "Mods/vcmi/mod.json",
             "LaunchScreen.storyboardc/Info.plist",
             "Assets.car",
+            "THIRD_PARTY_NOTICES.txt",
+            "license.txt",
         ]
         for relative in required_resources:
             if app + relative not in names:
                 raise ValueError(f"Missing required runtime resource: {relative}")
+        # Keep required third-party acknowledgments, but not an unsolicited
+        # VCMI-branded startup logo.
+        if app + "vcmi_logo.png" in names:
+            raise ValueError("Obsolete startup logo is still bundled")
+        notices = z.read(app + "THIRD_PARTY_NOTICES.txt").decode("utf-8")
+        license_text = z.read(app + "license.txt").decode("utf-8")
+        if "VCMI" not in notices or "GNU General Public License" not in notices:
+            raise ValueError("Open-source acknowledgments are missing")
+        if "GNU GENERAL PUBLIC LICENSE" not in license_text:
+            raise ValueError("GPL license text is missing from app")
+        if info.get("CFBundleDisplayName") != "Heroes III Mobile":
+            raise ValueError("Unexpected visible iOS app name")
         # iPhone and iPad Home Screen icons are compiled from our AppIcon set.
         icons = info.get("CFBundleIcons", {}).get("CFBundlePrimaryIcon", {})
         if icons.get("CFBundleIconName") != "AppIcon":
