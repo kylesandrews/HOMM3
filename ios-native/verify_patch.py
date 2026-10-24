@@ -19,6 +19,8 @@ assert "#ifndef VCMI_IOS" in cpp
 assert 'input["exists"]["iosOnly"].Bool()' in cpp
 assert 'input["mobileTouchTarget"].Bool()' in cpp
 assert "area.h = std::max(1, area.h - 63);" in cpp
+assert 'input["mobileCenterInStrip"].Bool()' in cpp
+assert 'position.x -= extraWidth / 2;' in cpp
 data = json.loads(re.sub(r"//[^\n]*", "", layout))
 dock = next(x for x in data["items"] if x.get("name") == "iosQuickActions")
 assert dock["exists"] == {"iosOnly": True, "widthMin": 560, "heightMin": 300}
@@ -34,7 +36,9 @@ expected = ("adventureKingdomOverview", "adventureQuestLog",
 assert tuple(x["hotkey"] for x in buttons) == expected
 for button in buttons:
     assert button["mobileTouchTarget"] is True
-    assert button["area"]["width"] >= 44 and button["area"]["height"] >= 44
+    assert button["mobileCenterInStrip"] is True
+    assert button["area"]["width"] >= 44 and button["area"]["height"] == 44
+    assert button["area"]["top"] == 15
 
 # Each layout measurement uses the same rules as AdventureMapWidget::readArea.
 for screen_w, screen_h in [(568, 320), (667, 375), (812, 375),
@@ -50,9 +54,10 @@ for screen_w, screen_h in [(568, 320), (667, 375), (812, 375),
     map_bottom = screen_h - 47 - 63
     assert map_bottom == dock_y
     edges = []
+    centered_offset = max(0, dock_w - 360) // 2
     for button in buttons:
         b = button["area"]
-        x = dock_x + dock_w - b["right"] - b["width"]
+        x = dock_x + dock_w - b["right"] - b["width"] - centered_offset
         y = dock_y + b["top"]
         assert x >= dock_x
         assert x + b["width"] <= dock_x + dock_w
@@ -60,6 +65,12 @@ for screen_w, screen_h in [(568, 320), (667, 375), (812, 375),
         assert y + b["height"] <= dock_y + area["height"]
         edges.append((x, x + b["width"]))
     assert all(edges[i][1] <= edges[i + 1][0] for i in range(len(edges)-1))
+    left_margin = edges[0][0] - dock_x
+    right_margin = (dock_x + dock_w) - edges[-1][1]
+    # Group is balanced within its strip, accounting for unequal native icons.
+    assert abs(left_margin - right_margin) <= 18, (screen_w, left_margin, right_margin)
+    # A normal 32px high Heroes III sprite should be visually centered at y=31.
+    assert buttons[0]["area"]["top"] + 32 // 2 == 31
 # A portable preflight for the optional Apple Silicon local build script.
 script = Path(__file__).with_name("build-ios-local.sh")
 if script.exists():
