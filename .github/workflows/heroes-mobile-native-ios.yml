@@ -31,8 +31,8 @@ jobs:
           python3 ios-native/verify_patch.py vcmi-src
           git -C vcmi-src diff --check
           echo "VCMI native iOS customization validated"
-          echo "## Heroes III Mobile v0.9: bundled-data auto-launch and touch dock" >> "$GITHUB_STEP_SUMMARY"
-          echo "Validated dock geometry, iOS-only map viewport reservation, six native controls, and conditional bundled-game autostart." >> "$GITHUB_STEP_SUMMARY"
+          echo "## Heroes III Mobile v1.0: centered, aligned six-action touch dock" >> "$GITHUB_STEP_SUMMARY"
+          echo "Validated centered dock geometry, iOS-only map viewport reservation, original six native controls, and conditional bundled-game autostart." >> "$GITHUB_STEP_SUMMARY"
   build-native-ios:
     needs: validate
     runs-on: macos-15
