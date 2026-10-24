@@ -28,10 +28,11 @@ jobs:
           cp ios-native/overrides/client/adventureMap/AdventureMapWidget.cpp vcmi-src/client/adventureMap/AdventureMapWidget.cpp
           cp ios-native/overrides/config/widgets/adventureMap.json vcmi-src/config/widgets/adventureMap.json
           cp ios-native/overrides/clientapp/ios/main.m vcmi-src/clientapp/ios/main.m
+          python3 ios-native/branding/apply_branding.py vcmi-src
           python3 ios-native/verify_patch.py vcmi-src
           git -C vcmi-src diff --check
           echo "VCMI native iOS customization validated"
-          echo "## Heroes III Mobile v1.1: centered controls and classic icon" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Heroes III Mobile v1.2: clean startup presentation and required credits" >> "$GITHUB_STEP_SUMMARY"
           echo "Validated centered dock geometry, iOS-only map viewport reservation, original six native controls, and conditional bundled-game autostart." >> "$GITHUB_STEP_SUMMARY"
   build-native-ios:
     needs: validate
@@ -56,6 +57,7 @@ jobs:
           cp ios-native/overrides/client/adventureMap/AdventureMapWidget.cpp vcmi-src/client/adventureMap/AdventureMapWidget.cpp
           cp ios-native/overrides/config/widgets/adventureMap.json vcmi-src/config/widgets/adventureMap.json
           cp ios-native/overrides/clientapp/ios/main.m vcmi-src/clientapp/ios/main.m
+          python3 ios-native/branding/apply_branding.py vcmi-src
           python3 ios-native/verify_patch.py vcmi-src
           git -C vcmi-src diff --check
           git -C vcmi-src diff > native-ios-customizations.diff
